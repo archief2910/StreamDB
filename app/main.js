@@ -8,7 +8,9 @@ console.log("Logs from your program will appear here!");
    // Handle connection
    socket.on('data', (data) => {
     const command = data.toString().trim();
+     console.log(`Received command: ${command}`);
 
+    // Example response: +PONG\r\n for PING command
     let response = "Command not recognized";
     if (command === "*1\r\n$4\r\nPING\r\n") {
       response = "+PONG\r";
