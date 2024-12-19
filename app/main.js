@@ -6,20 +6,20 @@ const server = net.createServer((socket) => {
 
   socket.on("data", (data) => {
     buffer += data.toString(); // Append data to the buffer
-
-    // Check if the buffer contains the complete command
-    if (buffer.includes("\r\n")) {
-      console.log(`Received complete command: ${buffer.trim()}`);
-
-      // Check if the command is exactly *1\r\n$4\r\nPING\r\n
-      if (buffer === "*1\r\n$4\r\nPING\r\n") {
-        socket.write("+PONG\r\n"); // Send the Redis PONG response
-      } else {
-        socket.write("-Error: Command not recognized\r\n"); // Send error response for unknown commands
-      }
+    const parts = buffer.split("\r\n");
+      let t=parts[0].substring(1);
+       let t1=parseInt(t, 10);
+       while(t1--){
+        if (parts[2] === "PING") {
+          socket.write("+PONG\r\n"); // Send the Redis PONG response
+        } else {
+          socket.write("-Error: Command not recognized\r\n"); // Send error response for unknown commands
+        }
+       }
+     
 
       buffer = ""; // Clear the buffer after processing
-    }
+    
   });
 
   socket.on("error", (err) => {
