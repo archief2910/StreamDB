@@ -10,7 +10,7 @@ console.log("Logs from your program will appear here!");
     const command = data.toString().trim();
 
     let response = "Command not recognized";
-    if (command === "PING") {
+    if (command === "*1\r\n$4\r\nPING\r\n") {
       response = "+PONG\r";
     } 
 
