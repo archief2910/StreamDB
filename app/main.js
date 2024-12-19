@@ -1,27 +1,33 @@
 const net = require("net");
 
-// You can use print statements as follows for debugging, they'll be visible when running tests.
-console.log("Logs from your program will appear here!");
+// Create a server
+const server = net.createServer((socket) => {
+  let buffer = ""; // To accumulate incoming data
 
+  socket.on("data", (data) => {
+    buffer += data.toString(); // Append data to the buffer
 
- const server = net.createServer((socket) => {
-   // Handle connection
-   socket.on('data', (data) => {
-    const command = data;
-     console.log(`Received command: ${command}`);
+    // Check if the buffer contains the complete command
+    if (buffer.includes("\r\n")) {
+      console.log(`Received complete command: ${buffer.trim()}`);
 
-    // Example response: +PONG\r\n for PING command
-    let response = "Command not recognized";
-    if (command === "*1\r\n$4\r\nPING\r\n") {
-      response = "+PONG\r";
-    } 
+      // Check if the command is exactly *1\r\n$4\r\nPING\r\n
+      if (buffer === "*1\r\n$4\r\nPING\r\n") {
+        socket.write("+PONG\r\n"); // Send the Redis PONG response
+      } else {
+        socket.write("-Error: Command not recognized\r\n"); // Send error response for unknown commands
+      }
 
-    socket.write(response + '\n');
+      buffer = ""; // Clear the buffer after processing
+    }
   });
 
-  socket.on('error', (err) => {
+  socket.on("error", (err) => {
     console.error(err);
   });
 });
-//
-server.listen(6379, "127.0.0.1");
+
+// Listen on Redis default port
+server.listen(6379, "127.0.0.1", () => {
+  console.log("Redis-like server is running on 127.0.0.1:6379");
+});
