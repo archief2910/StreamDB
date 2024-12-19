@@ -7,7 +7,7 @@ console.log("Logs from your program will appear here!");
  const server = net.createServer((socket) => {
    // Handle connection
    socket.on('data', (data) => {
-    const command = data.toString().trim();
+    const command = data;
      console.log(`Received command: ${command}`);
 
     // Example response: +PONG\r\n for PING command
