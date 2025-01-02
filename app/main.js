@@ -54,7 +54,7 @@ const server = net.createServer((connection) => {
     
     else if(command[2]=='GET'){
        
-       return connection.write("$" + map1.get(command[4]).length + "\r\n" + map1.get(command[4]) + "\r\n" || '$-1\r\n');
+       return connection.write(("$" + map1.get(command[4]).length + "\r\n" + map1.get(command[4]) + "\r\n") || '$-1\r\n');
     }
     else if(command[2]=='CONFIG' && command[4]=='GET' ){
           return connection.write("*2"+ "\r\n"+"$" + command[6].length+ "\r\n" + command[6]+"\r\n"+"$" + addr.get(command[6]).length + "\r\n" + addr.get(command[6])+ "\r\n" || '$-1\r\n');
