@@ -48,7 +48,7 @@ const server = net.createServer((connection) => {
         setTimeout(accurateTimeout, interval);
       }
     
-      return connection.write("OK\r\n");
+      return connection.write("+OK\r\n");
     }
     
     
