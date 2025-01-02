@@ -59,7 +59,8 @@ const server = net.createServer((connection) => {
     return connection.write('$-1\r\n');
     }
     else if(command[2]=='CONFIG' && command[4]=='GET' ){
-          return connection.write("*2"+ "\r\n"+"$" + command[6].length+ "\r\n" + command[6]+"\r\n"+"$" + addr.get(command[6]).length + "\r\n" + addr.get(command[6])+ "\r\n" || '$-1\r\n');
+         if(addr.has(command[6])){  return connection.write("*2"+ "\r\n"+"$" + command[6].length+ "\r\n" + command[6]+"\r\n"+"$" + addr.get(command[6]).length + "\r\n" + addr.get(command[6])+ "\r\n" );}
+        return connection.write('$-1\r\n');
     }
    
   });
