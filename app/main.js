@@ -6,8 +6,8 @@ const addr =new Map();
 const arguments = process.argv.slice(2);
 const [fileDir, fileName] = [arguments[1] ?? null, arguments[3] ?? null];
 if (fileDir && fileName) {
-	config.set('dir', fileDir);
-	config.set('dbfilename', fileName);
+	addr.set('dir', fileDir);
+	addr.set('dbfilename', fileName);
 }
 const server = net.createServer((connection) => {
   console.log('Client connected');
