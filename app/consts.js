@@ -9,6 +9,7 @@ const OPCODES = {
 	EXPIRETIMEMS: 0xfc,
 	RESIZEDB: 0xfb,
 	AUX: 0xfa,
+	STRING:0x00,
 };
 module.exports = {
 	redis_main_const,
