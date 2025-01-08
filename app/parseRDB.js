@@ -52,7 +52,7 @@ function handleResizedb(data, cursor) {
   console.log(`Resized DB: Hash Table Size = ${hashTableSize}, Expire Table Size = ${expireTableSize}`);
 
   // Initialize map to store key-expiry time pairs
-  
+  const map3 = new Map();
   console.log('Initializing');
 
   // Now read each key-value pair
@@ -64,14 +64,14 @@ function handleResizedb(data, cursor) {
       // FD format: expiry time in seconds (4 bytes unsigned int)
       cursor++; // Move past 'FD'
       expiryTime = data.readUInt32LE(cursor); // Read 4-byte unsigned int
-      cursor += 5;
-      console.log("Expiry time: " + expiryTime);
+      cursor += 4;
+      console.log("Expiry time (seconds): " + expiryTime);
     } else if (data[cursor] === 0xFC) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
       cursor++; // Move past 'FC'
       expiryTime = data.readUInt64LE(cursor); // Read 8-byte unsigned long
-      cursor += 9;
-      console.log("Expiry time: " + expiryTime);
+      cursor += 8;
+      console.log("Expiry time (milliseconds): " + expiryTime);
     }
 
     // Move past the value-type byte
@@ -88,8 +88,18 @@ function handleResizedb(data, cursor) {
     const key = data.subarray(cursor, cursor + keyLength).toString();
     cursor += keyLength;
 
-    // Process the value based on valueType (this is assumed to be implemented correctly)
-    cursor = processKeyValuePair(data, cursor);
+    // Read the value length and then the value itself (assuming value type is string)
+    const [valueLength, valueCursor] = handleLengthEncoding(data, cursor);
+    cursor = valueCursor;
+
+    if (cursor + valueLength > data.length) {
+      throw new Error(`Value length exceeds buffer size at cursor ${cursor}`);
+    }
+    const value = data.subarray(cursor, cursor + valueLength).toString();
+    cursor += valueLength;
+
+    // Process the value based on valueType (this part could be extended for different value types)
+    console.log(`Key: ${key}, Value: ${value}`);
 
     // If expiry time is present, store it in map3 with the key
     if (expiryTime !== null) {
