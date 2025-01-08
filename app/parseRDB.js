@@ -39,6 +39,7 @@ function processKeyValuePair(data, cursor) {
   return cursor;
 }
 
+
 function handleResizedb(data, cursor) {
   // Read the $length-encoded int for hash table size
   const [hashTableSize, newCursor] = handleLengthEncoding(data, cursor);
@@ -52,34 +53,42 @@ function handleResizedb(data, cursor) {
 
   // Initialize map to store key-expiry time pairs
   const map3 = new Map();
-console.log('Initializing');
+  console.log('Initializing');
+
   // Now read each key-value pair
   for (let i = 0; i < hashTableSize; i++) {
-     // Move past the value-type byte
-
     let expiryTime = null;
 
     // Check if expiry time is present in the RDB entry
     if (data[cursor] === 0xFD) {
       // FD format: expiry time in seconds (4 bytes unsigned int)
-      cursor += 8; // Move past 'FD'
+      cursor++; // Move past 'FD'
       expiryTime = data.readUInt32LE(cursor); // Read 4-byte unsigned int
       cursor += 4;
       console.log("Expiry time: " + expiryTime);
     } else if (data[cursor] === 0xFC) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
-      cursor += 8; // Move past 'FC'
+      cursor++; // Move past 'FC'
       expiryTime = data.readUInt64LE(cursor); // Read 8-byte unsigned long
       cursor += 8;
       console.log("Expiry time: " + expiryTime);
     }
+
+    // Move past the value-type byte
     const valueType = data[cursor]; // 1 byte indicating the value type
     cursor += 1;
-    // Process key-value pair
-    const [key, newCursor] = handleLengthEncoding(data, cursor);
-    cursor = newCursor;
 
-    // Process value based on valueType
+    // Read the key length and then the key itself
+    const [keyLength, keyCursor] = handleLengthEncoding(data, cursor);
+    cursor = keyCursor;
+
+    if (cursor + keyLength > data.length) {
+      throw new Error(`Key length exceeds buffer size at cursor ${cursor}`);
+    }
+    const key = data.subarray(cursor, cursor + keyLength).toString();
+    cursor += keyLength;
+
+    // Process the value based on valueType (this is assumed to be implemented correctly)
     cursor = processKeyValuePair(data, cursor);
 
     // If expiry time is present, store it in map3 with the key
@@ -93,6 +102,7 @@ console.log('Initializing');
 
   return cursor;
 }
+
 
 
 function traversal(data) {
