@@ -66,11 +66,13 @@ function handleResizedb(data, cursor) {
       cursor += 1; // Move past 'FD'
       expiryTime = data.readUInt32LE(cursor); // Read 4-byte unsigned int
       cursor += 4;
+      console.log("Expiry time: " + expiryTime);
     } else if (data[cursor] === 0xFC) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
       cursor += 1; // Move past 'FC'
       expiryTime = data.readUInt64LE(cursor); // Read 8-byte unsigned long
       cursor += 8;
+      console.log("Expiry time: " + expiryTime);
     }
 
     // Process key-value pair
