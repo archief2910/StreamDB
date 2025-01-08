@@ -82,20 +82,16 @@ function handleResizedb(data, cursor) {
     const [keyLength, keyCursor] = handleLengthEncoding(data, cursor);
     cursor = keyCursor;
 
-    if (cursor + keyLength > data.length) {
-      throw new Error(`Key length exceeds buffer size at cursor ${cursor}`);
-    }
-    const key = data.subarray(cursor, cursor + keyLength).toString();
+    // Extract the key based on the key length
+    const key = data.toString('utf8', cursor, cursor + keyLength); 
     cursor += keyLength;
 
     // Read the value length and then the value itself (assuming value type is string)
     const [valueLength, valueCursor] = handleLengthEncoding(data, cursor);
     cursor = valueCursor;
 
-    if (cursor + valueLength > data.length) {
-      throw new Error(`Value length exceeds buffer size at cursor ${cursor}`);
-    }
-    const value = data.subarray(cursor, cursor + valueLength).toString();
+    // Extract the value based on the value length
+    const value = data.toString('utf8', cursor, cursor + valueLength);
     cursor += valueLength;
 
     // Process the value based on valueType (this part could be extended for different value types)
