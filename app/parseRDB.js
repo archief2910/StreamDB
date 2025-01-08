@@ -88,8 +88,7 @@ function handleResizedb(data, cursor) {
     }
 
     // Move past the value-type byte
-    const valueType = data[cursor]; // 1 byte indicating the value type
-    cursor += 1;
+    
 
     // Read the key length and then the key itself
     const [keyLength, keyCursor] = handleLengthEncoding(data, cursor);
