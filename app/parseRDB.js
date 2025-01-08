@@ -55,8 +55,7 @@ function handleResizedb(data, cursor) {
 
   // Now read each key-value pair
   for (let i = 0; i < hashTableSize; i++) {
-    const valueType = data[cursor]; // 1 byte indicating the value type
-    cursor += 1; // Move past the value-type byte
+     // Move past the value-type byte
 
     let expiryTime = null;
 
@@ -74,7 +73,8 @@ function handleResizedb(data, cursor) {
       cursor += 8;
       console.log("Expiry time: " + expiryTime);
     }
-
+    const valueType = data[cursor]; // 1 byte indicating the value type
+    cursor += 1;
     // Process key-value pair
     const [key, newCursor] = handleLengthEncoding(data, cursor);
     cursor = newCursor;
