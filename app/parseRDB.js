@@ -51,7 +51,7 @@ function traversal(data) {
       const [dbIndex, newCursor] = handleLengthEncoding(data, cursor);
       cursor = newCursor;
       console.log(`Switched to DB ${dbIndex}`);
-    }else if (opcode === OPCODES.RESIZEDB){console.log('lola');}
+    }else if (opcode === OPCODES.RESIZEDB){console.log('lola'); cursor++;}
      else if (opcode === OPCODES.STRING ) {
       console.log(`Found expiry at cursor ${cursor}`);
       
