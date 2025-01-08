@@ -51,10 +51,6 @@ function handleResizedb(data, cursor) {
 
   console.log(`Resized DB: Hash Table Size = ${hashTableSize}, Expire Table Size = ${expireTableSize}`);
 
-  // Initialize map to store key-expiry time pairs
-  const map3 = new Map();
-  console.log('Initializing');
-
   // Now read each key-value pair
   for (let i = 0; i < hashTableSize; i++) {
     let expiryTime = null;
@@ -64,33 +60,31 @@ function handleResizedb(data, cursor) {
 
     // Check if expiry time is present in the RDB entry
     if (data[cursor] === 0xFD) {
-      // FD format: expiry time in seconds (4 bytes unsigned int)
       cursor++; // Move past 'FD'
-  
+
       // Create a DataView to interpret the bytes as a 32-bit unsigned integer
       const buffer = data.slice(cursor, cursor + 4).buffer;
       const dataView = new DataView(buffer);
-  
+
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
-      const expiryTime = dataView.getUint32(0, true); 
-  
+      expiryTime = dataView.getUint32(0, true);
+
       cursor += 4;
       console.log("Expiry time (seconds): " + expiryTime);
-  }
-   else if (data[cursor] === 0xFC) {
-      // FC format: expiry time in milliseconds (8 bytes unsigned long)
-      cursor++;
-      console.log('oops'); // Move past 'FC'
+    } else if (data[cursor] === 0xFC) {
+      cursor++; // Move past 'FC'
+
       const buffer = data.slice(cursor, cursor + 8).buffer;
       const dataView = new DataView(buffer);
-  
-      // Read the 32-bit unsigned integer in little-endian format (from position 0)
-      const expiryTime = dataView.getBigUint64(0, true); 
-      cursor+=8;
+
+      // Read the 64-bit unsigned integer in little-endian format
+      expiryTime = dataView.getBigUint64(0, true);
+
+      cursor += 8;
       console.log("Expiry time (milliseconds): " + expiryTime);
     } else {
       console.log(`Unexpected opcode 0x${data[cursor].toString(16).toUpperCase()} at cursor ${cursor}`);
-      cursor++; // Move to next byte (this might need to be more specific)
+      cursor++; // Move to the next byte (this might need to be more specific)
     }
 
     // Move past the value-type byte
@@ -102,7 +96,7 @@ function handleResizedb(data, cursor) {
     cursor = keyCursor;
 
     // Extract the key based on the key length
-    const key = data.toString('utf8', cursor, cursor + keyLength); 
+    const key = data.toString('utf8', cursor, cursor + keyLength);
     cursor += keyLength;
 
     // Read the value length and then the value itself (assuming value type is string)
