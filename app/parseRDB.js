@@ -14,17 +14,39 @@ function handleLengthEncoding(data, cursor) {
     lengthValues[lengthType] || new Error(`Invalid length encoding ${lengthType} at ${cursor}`)
   );
 }
-
 function processKeyValuePair(data, cursor) {
-  const keyLength = data[cursor];
-  const key = data.subarray(cursor + 1, cursor + 1 + keyLength).toString();
-  cursor += keyLength + 1;
+  // Parse key length
+  const [keyLength, newCursor] = handleLengthEncoding(data, cursor);
+  cursor = newCursor;
 
-  const valueLength = data[cursor];
-  const value = data.subarray(cursor + 1, cursor + 1 + valueLength).toString();
-  cursor += valueLength + 1;
+  // Validate key length
+  if (cursor + keyLength > data.length) {
+    throw new Error(`Invalid key length at cursor ${cursor}`);
+  }
+
+  // Extract key
+  const key = data.subarray(cursor, cursor + keyLength).toString();
+  cursor += keyLength;
+
+  // Parse value length
+  const [valueLength, updatedCursor] = handleLengthEncoding(data, cursor);
+  cursor = updatedCursor;
+
+  // Validate value length
+  if (cursor + valueLength > data.length) {
+    throw new Error(`Invalid value length at cursor ${cursor}`);
+  }
+
+  // Extract value
+  const value = data.subarray(cursor, cursor + valueLength).toString();
+  cursor += valueLength;
+
+  // Debugging output
   console.log(`Key: ${key}, Value: ${value}`);
+
+  // Store in the map
   map2.set(key, value);
+
   return cursor;
 }
 
