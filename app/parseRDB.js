@@ -52,7 +52,7 @@ function handleResizedb(data, cursor) {
 
   // Initialize map to store key-expiry time pairs
   const map3 = new Map();
-
+console.log('Initializing');
   // Now read each key-value pair
   for (let i = 0; i < hashTableSize; i++) {
      // Move past the value-type byte
