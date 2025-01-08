@@ -1,7 +1,7 @@
 const net = require("net");
 const fs = require("fs");
 const path = require("path");
-const { getKeysValues } = require("./parseRDB.js");
+const { getKeysValues ,map3} = require("./parseRDB.js");
  // Load your RDB file
 
 
@@ -37,6 +37,7 @@ const serializeRESP = (obj) => {
 
 let rdb = null; // Initialize RDB to null
 let map1=new Map();
+
 const addr = new Map();
 const arguments = process.argv.slice(2);
 const [fileDir, fileName] = [arguments[1] ?? null, arguments[3] ?? null];
@@ -63,7 +64,15 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
 }
+const currentTimeInSeconds = Math.floor(Date.now() / 1000);  // Current time in seconds
 
+// Iterate through map3 and remove expired keys
+map3.forEach((expiryTime, key) => {
+  if (expiryTime <= currentTimeInSeconds) {
+    console.log(`Key ${key} has expired and will be removed.`);
+    map3.delete(key);  // Remove expired key
+  }
+});
 
 
 const server = net.createServer((connection) => {
@@ -99,7 +108,7 @@ const server = net.createServer((connection) => {
 
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
-      if (map1.has(command[4])) {
+      if (map1.has(command[4]) ) {
         connection.write(serializeRESP(map1.get(command[4])));
       } else {
         connection.write(serializeRESP(null));

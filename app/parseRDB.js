@@ -1,6 +1,7 @@
 const { redis_main_const, OPCODES } = require("./consts.js");
 
-const map2 = new Map();
+const map2 = new Map();  // Stores key-value pairs
+const map3 = new Map();  // Stores key-expiryTime pairs
 
 function handleLengthEncoding(data, cursor) {
   const byte = data[cursor];
@@ -39,26 +40,37 @@ function processKeyValuePair(data, cursor) {
   return cursor;
 }
 
-function handleResizedb(data, cursor) {
-  // Read the $length-encoded int for hash table size
-  const [hashTableSize, newCursor] = handleLengthEncoding(data, cursor);
-  cursor = newCursor;
+function handleExpiryTimeInSeconds(data, cursor) {
+  const expiryTime = data.readUInt32BE(cursor); // 4-byte unsigned int (expiry in seconds)
+  cursor += 4;
+  return [expiryTime, cursor];
+}
 
-  // Read the $length-encoded int for expire hash table size
-  const [expireTableSize, expireCursor] = handleLengthEncoding(data, cursor);
-  cursor = expireCursor;
+function handleExpiryTimeInMilliseconds(data, cursor) {
+  const expiryTime = data.readBigUInt64BE(cursor); // 8-byte unsigned long (expiry in milliseconds)
+  cursor += 8;
+  return [expiryTime, cursor];
+}
 
-  console.log(`Resized DB: Hash Table Size = ${hashTableSize}, Expire Table Size = ${expireTableSize}`);
+function handleFdAndFc(data, cursor, opcode) {
+  let expiryTime;
 
-  // Now read each key-value pair
-  for (let i = 0; i < hashTableSize; i++) {
-    const valueType = data[cursor]; // 1 byte indicating the value type
-    cursor += 1; // Move past the value-type byte
-
-    // Now process key-value pair based on value type
-    cursor = processKeyValuePair(data, cursor);
+  if (opcode === OPCODES.EXPIRETIME) {
+    console.log(`Expiry time in seconds at cursor ${cursor}`);
+    [expiryTime, cursor] = handleExpiryTimeInSeconds(data, cursor + 1);
+  } else if (opcode === OPCODES.EXPIRETIMEMS) {
+    console.log(`Expiry time in milliseconds at cursor ${cursor}`);
+    [expiryTime, cursor] = handleExpiryTimeInMilliseconds(data, cursor + 1);
+  } else {
+    throw new Error(`Unexpected opcode for expiry time handling: ${opcode}`);
   }
 
+  // Process key-value pair (no need to store value here, just key and expiry)
+  const [keyLength, newCursor] = handleLengthEncoding(data, cursor);
+  const key = data.subarray(newCursor, newCursor + keyLength).toString();
+  cursor = newCursor + keyLength;
+
+  map3.set(key, expiryTime);  // Store key and its expiry time in map3
   return cursor;
 }
 
@@ -76,6 +88,8 @@ function traversal(data) {
       console.log(`Switched to DB ${dbIndex}`);
     } else if (opcode === OPCODES.RESIZEDB) {
       cursor = handleResizedb(data, cursor + 1); // Skip opcode and process resizedb
+    } else if (opcode === OPCODES.EXPIRETIME || opcode === OPCODES.EXPIRETIMEMS) {
+      cursor = handleFdAndFc(data, cursor, opcode); // Handle FD/FC and store in map3
     } else if (opcode === OPCODES.EOF) {
       console.log(`End of file reached at cursor ${cursor}`);
       break;
@@ -85,15 +99,16 @@ function traversal(data) {
     }
   }
 
-  return map2;
+  return  map2; // Return both map2 (key-value pairs) and map3 (key-expiry pairs)
 }
 
 function getKeysValues(data) {
-  traversal(data); // Populate map2
-  console.log("Map contents:", Array.from(map2.entries()));
-  return map2;
+  const  map2 = traversal(data); // Populate map2 and map3
+  console.log("Map2 contents:", Array.from(map2.entries()));
+  console.log("Map3 contents (with expiry times):", Array.from(map3.entries()));
+  return map2;  // Return both maps separately
 }
 
 module.exports = {
-  getKeysValues,
+  getKeysValues,map3
 };
