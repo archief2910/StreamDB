@@ -52,7 +52,7 @@ function handleResizedb(data, cursor) {
   console.log(`Resized DB: Hash Table Size = ${hashTableSize}, Expire Table Size = ${expireTableSize}`);
 
   // Initialize map to store key-expiry time pairs
-  const map3 = new Map();
+  
   console.log('Initializing');
 
   // Now read each key-value pair
@@ -64,13 +64,13 @@ function handleResizedb(data, cursor) {
       // FD format: expiry time in seconds (4 bytes unsigned int)
       cursor++; // Move past 'FD'
       expiryTime = data.readUInt32LE(cursor); // Read 4-byte unsigned int
-      cursor += 4;
+      cursor += 5;
       console.log("Expiry time: " + expiryTime);
     } else if (data[cursor] === 0xFC) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
       cursor++; // Move past 'FC'
       expiryTime = data.readUInt64LE(cursor); // Read 8-byte unsigned long
-      cursor += 8;
+      cursor += 9;
       console.log("Expiry time: " + expiryTime);
     }
 
