@@ -39,6 +39,29 @@ function processKeyValuePair(data, cursor) {
   return cursor;
 }
 
+function handleResizedb(data, cursor) {
+  // Read the $length-encoded int for hash table size
+  const [hashTableSize, newCursor] = handleLengthEncoding(data, cursor);
+  cursor = newCursor;
+
+  // Read the $length-encoded int for expire hash table size
+  const [expireTableSize, expireCursor] = handleLengthEncoding(data, cursor);
+  cursor = expireCursor;
+
+  console.log(`Resized DB: Hash Table Size = ${hashTableSize}, Expire Table Size = ${expireTableSize}`);
+
+  // Now read each key-value pair
+  for (let i = 0; i < hashTableSize; i++) {
+    const valueType = data[cursor]; // 1 byte indicating the value type
+    cursor += 1; // Move past the value-type byte
+
+    // Now process key-value pair based on value type
+    cursor = processKeyValuePair(data, cursor);
+  }
+
+  return cursor;
+}
+
 function traversal(data) {
   let cursor = 9; // Skip header ("REDIS0011")
 
@@ -51,12 +74,8 @@ function traversal(data) {
       const [dbIndex, newCursor] = handleLengthEncoding(data, cursor);
       cursor = newCursor;
       console.log(`Switched to DB ${dbIndex}`);
-    }else if (opcode === OPCODES.RESIZEDB){console.log('lola'); cursor++;}
-     else if (opcode === OPCODES.STRING ) {
-      console.log(`Found expiry at cursor ${cursor}`);
-      
-      cursor += 8; // Skip expiry info
-      cursor = processKeyValuePair(data, cursor);
+    } else if (opcode === OPCODES.RESIZEDB) {
+      cursor = handleResizedb(data, cursor + 1); // Skip opcode and process resizedb
     } else if (opcode === OPCODES.EOF) {
       console.log(`End of file reached at cursor ${cursor}`);
       break;
