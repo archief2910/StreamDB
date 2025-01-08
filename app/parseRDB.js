@@ -51,10 +51,11 @@ function traversal(data) {
       const [dbIndex, newCursor] = handleLengthEncoding(data, cursor);
       cursor = newCursor;
       console.log(`Switched to DB ${dbIndex}`);
-    } else if (opcode === OPCODES.STRING ) {
+    }else if (opcode === OPCODES.RESIZEDB){console.log('lola');}
+     else if (opcode === OPCODES.STRING ) {
+      console.log(`Found expiry at cursor ${cursor}`);
       
-     
-      cursor += 9; // Skip expiry info
+      cursor += 8; // Skip expiry info
       cursor = processKeyValuePair(data, cursor);
     } else if (opcode === OPCODES.EOF) {
       console.log(`End of file reached at cursor ${cursor}`);
