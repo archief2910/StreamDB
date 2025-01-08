@@ -59,6 +59,9 @@ function handleResizedb(data, cursor) {
   for (let i = 0; i < hashTableSize; i++) {
     let expiryTime = null;
 
+    // Debugging: Log the current byte value at the cursor
+    console.log(`Current byte at cursor ${cursor}: 0x${data[cursor].toString(16).toUpperCase()}`);
+
     // Check if expiry time is present in the RDB entry
     if (data[cursor] === 0xFD) {
       // FD format: expiry time in seconds (4 bytes unsigned int)
@@ -72,6 +75,9 @@ function handleResizedb(data, cursor) {
       expiryTime = data.readUInt64LE(cursor); // Read 8-byte unsigned long
       cursor += 8;
       console.log("Expiry time (milliseconds): " + expiryTime);
+    } else {
+      console.log(`Unexpected opcode 0x${data[cursor].toString(16).toUpperCase()} at cursor ${cursor}`);
+      cursor++; // Move to next byte (this might need to be more specific)
     }
 
     // Move past the value-type byte
