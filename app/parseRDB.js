@@ -1,10 +1,11 @@
 const { redis_main_const, OPCODES } = require("./consts.js");
 
 const map2 = new Map();
+
 function handleLengthEncoding(data, cursor) {
   const byte = data[cursor];
   const type = (byte & 0b11000000) >> 6;
-  
+
   if (type === 0b00) {
     return [byte & 0b00111111, cursor + 1]; // 6-bit length
   } else if (type === 0b01) {
@@ -17,13 +18,19 @@ function handleLengthEncoding(data, cursor) {
 }
 
 function processKeyValuePair(data, cursor) {
-  // Decode Key
   const [keyLength, newCursor] = handleLengthEncoding(data, cursor);
+  if (cursor + keyLength > data.length) {
+    throw new Error(`Key length exceeds buffer size at cursor ${cursor}`);
+  }
+
   const key = data.subarray(newCursor, newCursor + keyLength).toString();
   cursor = newCursor + keyLength;
 
-  // Decode Value
   const [valueLength, valueCursor] = handleLengthEncoding(data, cursor);
+  if (cursor + valueLength > data.length) {
+    throw new Error(`Value length exceeds buffer size at cursor ${cursor}`);
+  }
+
   const value = data.subarray(valueCursor, valueCursor + valueLength).toString();
   cursor = valueCursor + valueLength;
 
@@ -53,8 +60,8 @@ function traversal(data) {
       console.log(`End of file reached at cursor ${cursor}`);
       break;
     } else {
-      console.log(`Processing key-value at cursor ${cursor}`);
-      cursor = processKeyValuePair(data, cursor);
+      console.warn(`Unrecognized opcode ${opcode} at cursor ${cursor}`);
+      cursor++; // Move forward to avoid infinite loop
     }
   }
 
