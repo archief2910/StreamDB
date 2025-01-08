@@ -49,31 +49,55 @@ function processKeyValuePair(data, cursor) {
 
   return cursor;
 }
-
 function traversal(data) {
   console.log("Starting traversal");
-  const { REDIS_MAGIC_STRING, REDIS_VERSION } = redis_main_const;
-  let cursor = REDIS_MAGIC_STRING + REDIS_VERSION;
-
-  while (cursor < data.length && data[cursor] !== OPCODES.SELECTDB) {
-    console.log(`Skipping byte at cursor ${cursor}`);
-    cursor++;
-  }
-  cursor++;
+  let cursor = 9; // Skip the 5-byte magic string and 4-byte version
 
   while (cursor < data.length) {
-    console.log(`Parsing at cursor ${cursor}`);
-    if (data[cursor] === OPCODES.EXPIRETIME || data[cursor] === OPCODES.EXPIRETIMEMS) {
-      console.log("Found expiry opcode");
-      const expiryLength = data[cursor] === OPCODES.EXPIRETIME ? 4 : 8;
-      cursor += expiryLength + 1;
-      cursor = processKeyValuePair(data, cursor);
-    } else {
-      cursor++;
+    const opcode = data[cursor];
+    console.log(`Parsing at cursor ${cursor}, opcode: 0x${opcode.toString(16)}`);
+
+    switch (opcode) {
+      case 0xFA: // Auxiliary field
+        console.log("Found auxiliary field");
+        cursor++; // Move past `FA`
+        cursor = processKeyValuePair(data, cursor);
+        break;
+
+      case 0xFE: // Database selector
+        console.log("Found database selector");
+        cursor += 2; // Move past `FE` and db number (1 byte)
+        break;
+
+      case 0xFB: // Resizedb field
+        console.log("Found resizedb field");
+        cursor++; // Move past `FB`
+        cursor = handleLengthEncoding(data, cursor)[1]; // Skip first length
+        cursor = handleLengthEncoding(data, cursor)[1]; // Skip second length
+        break;
+
+      case 0xFD: // Expiry time in seconds
+      case 0xFC: // Expiry time in milliseconds
+        console.log(`Found expiry time opcode: ${opcode === 0xFD ? "seconds" : "milliseconds"}`);
+        const expiryLength = opcode === 0xFD ? 4 : 8;
+        cursor += expiryLength + 1; // Skip expiry time and move to the next opcode
+        cursor = processKeyValuePair(data, cursor); // Parse key-value pair
+        break;
+
+      case 0xFF: // End of RDB file
+        console.log("End of RDB file reached");
+        cursor += 9; // Move past the 8-byte checksum
+        return map2;
+
+      default: // Key-value pair without expiry
+        console.log("Found key-value pair without expiry");
+        cursor++;
+        cursor = processKeyValuePair(data, cursor);
+        break;
     }
   }
 
-  return map2;
+  throw new Error("Unexpected end of data without RDB file end marker");
 }
 
 function getKeysValues(data) {
