@@ -5,7 +5,7 @@ const { getKeysValues } = require("./parseRDB.js");
  // Load your RDB file
 
 
-console.log(parsedMap); // Logs the Map with key-value pairs
+ // Logs the Map with key-value pairs
 // Function to serialize data into RESP format
 const serializeRESP = (obj) => {
   let resp = '';
