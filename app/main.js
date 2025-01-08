@@ -2,7 +2,10 @@ const net = require("net");
 const fs = require("fs");
 const path = require("path");
 const { getKeysValues } = require("./parseRDB.js");
+ // Load your RDB file
 
+
+console.log(parsedMap); // Logs the Map with key-value pairs
 // Function to serialize data into RESP format
 const serializeRESP = (obj) => {
   let resp = '';
@@ -33,7 +36,7 @@ const serializeRESP = (obj) => {
 };
 
 let rdb = null; // Initialize RDB to null
-const map1 = new Map();
+
 const addr = new Map();
 const arguments = process.argv.slice(2);
 const [fileDir, fileName] = [arguments[1] ?? null, arguments[3] ?? null];
@@ -59,6 +62,8 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
 }
+
+const map1 = getKeysValues(rdb);
 
 const server = net.createServer((connection) => {
   console.log("Client connected");
@@ -107,17 +112,14 @@ const server = net.createServer((connection) => {
         connection.write(serializeRESP(null));
       }
     } else if (command[2] === "KEYS") {
-      if (rdb) {
-        try {
-          const keys = getKeysValues(rdb); // Use the RDB parsing logic
-          connection.write(serializeRESP(keys || []));
-        } catch (error) {
-          console.error("Error parsing RDB file:", error);
-          connection.write(serializeRESP([]));
-        }
-      } else {
-        connection.write(serializeRESP([]));
-      }
+     // Get all keys from map1
+  const keys = Array.from(map1.keys());
+
+  // Serialize keys into RESP format
+  const respKeys = `*${keys.length}\r\n` + keys.map(key => `$${key.length}\r\n${key}\r\n`).join('');
+
+  // Send the serialized response
+  connection.write(respKeys);
     } else {
       connection.write(serializeRESP("ERR unknown command"));
     }
