@@ -85,7 +85,7 @@ function handleResizedb(data, cursor) {
       const dataView = new DataView(buffer);
   
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
-      const expiryTime = dataView.getUBigint64(0, true); 
+      const expiryTime = dataView.getBigUint64(0, true); 
       cursor+=8;
       console.log("Expiry time (milliseconds): " + expiryTime);
     } else {
