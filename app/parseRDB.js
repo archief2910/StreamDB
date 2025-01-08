@@ -68,11 +68,11 @@ function handleResizedb(data, cursor) {
       cursor++; // Move past 'FD'
   
       // Create a DataView to interpret the bytes as a 32-bit unsigned integer
-      const buffer = data.slice(cursor, cursor + 4).buffer;
-      const dataView = new DataView(buffer);
+      let buffer = data.slice(cursor, cursor + 4).buffer;
+      let dataView = new DataView(buffer);
   
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
-      const expiryTime = dataView.getUint32(0, true); 
+      expiryTime = dataView.getUint32(0, true); 
   
       cursor += 4;
       console.log("Expiry time (seconds): " + expiryTime);
@@ -81,11 +81,11 @@ function handleResizedb(data, cursor) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
       cursor++;
       console.log('oops'); // Move past 'FC'
-      const buffer = data.slice(cursor, cursor + 8).buffer;
-      const dataView = new DataView(buffer);
+      let buffer = data.slice(cursor, cursor + 8).buffer;
+      let dataView = new DataView(buffer);
   
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
-      const expiryTime = dataView.getBigUint64(0, true); 
+      expiryTime = dataView.getBigUint64(0, true); 
       cursor+=8;
       console.log("Expiry time (milliseconds): " + expiryTime);
     } else {
