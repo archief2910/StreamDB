@@ -106,7 +106,7 @@ function handleResizedb(data, cursor) {
     // Extract the value based on the value length
     const value = data.toString('utf8', cursor, cursor + valueLength);
     cursor += valueLength;
-
+    cursor = processKeyValuePair(data, cursor);
     // Process the value based on valueType (this part could be extended for different value types)
     console.log(`Key: ${key}, Value: ${value}`);
 

@@ -108,7 +108,7 @@ const server = net.createServer((connection) => {
 
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
-      if (map1.has(command[4]) ) {
+      if (map1.has(command[4]) && map3.has(command[4])) {
         connection.write(serializeRESP(map1.get(command[4])));
       } else {
         connection.write(serializeRESP(null));
