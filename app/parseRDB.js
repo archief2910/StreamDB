@@ -29,20 +29,22 @@ function processKeyValuePair(data, cursor) {
 }
 
 function traversal(data) {
+  console.log("Starting traversal");
   const { REDIS_MAGIC_STRING, REDIS_VERSION } = redis_main_const;
   let cursor = REDIS_MAGIC_STRING + REDIS_VERSION;
 
-  // Skip until the first SELECTDB opcode
   while (cursor < data.length && data[cursor] !== OPCODES.SELECTDB) {
+    console.log(`Skipping byte at cursor ${cursor}`);
     cursor++;
   }
-  cursor++; // Move past SELECTDB opcode
+  cursor++;
 
-  // Parse the rest of the RDB file
   while (cursor < data.length) {
+    console.log(`Parsing at cursor ${cursor}`);
     if (data[cursor] === OPCODES.EXPIRETIME || data[cursor] === OPCODES.EXPIRETIMEMS) {
+      console.log("Found expiry opcode");
       const expiryLength = data[cursor] === OPCODES.EXPIRETIME ? 4 : 8;
-      cursor += expiryLength + 1; // Skip expiry opcode and timestamp
+      cursor += expiryLength + 1;
       cursor = processKeyValuePair(data, cursor);
     } else {
       cursor++;
@@ -54,6 +56,7 @@ function traversal(data) {
 
 function getKeysValues(data) {
   traversal(data); // Populate map2
+  console.log("Map contents:", Array.from(map2.entries()));
   return map2;
 }
 
