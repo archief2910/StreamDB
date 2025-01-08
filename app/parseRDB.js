@@ -23,7 +23,7 @@ function processKeyValuePair(data, cursor) {
   const valueLength = data[cursor];
   const value = data.subarray(cursor + 1, cursor + 1 + valueLength).toString();
   cursor += valueLength + 1;
-
+  console.log(`Key: ${key}, Value: ${value}`);
   map2.set(key, value);
   return cursor;
 }
