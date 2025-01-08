@@ -36,7 +36,7 @@ const serializeRESP = (obj) => {
 };
 
 let rdb = null; // Initialize RDB to null
-let map1=null;
+let map1=new Map();
 const addr = new Map();
 const arguments = process.argv.slice(2);
 const [fileDir, fileName] = [arguments[1] ?? null, arguments[3] ?? null];
