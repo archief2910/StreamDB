@@ -51,7 +51,7 @@ function processKeyValuePair(data, cursor) {
 }
 function traversal(data) {
   console.log("Starting traversal");
-  let cursor = 9; // Skip the 5-byte magic string and 4-byte version
+  let cursor = 9; // Skip magic string (5 bytes) + version (4 bytes)
 
   while (cursor < data.length) {
     const opcode = data[cursor];
@@ -59,38 +59,41 @@ function traversal(data) {
 
     switch (opcode) {
       case 0xFA: // Auxiliary field
-        console.log("Found auxiliary field");
-        cursor++; // Move past `FA`
-        cursor = processKeyValuePair(data, cursor);
+        cursor++;
+        const auxKey = readString(data, cursor);
+        cursor += auxKey.length + 1;
+        const auxValue = readString(data, cursor);
+        cursor += auxValue.length + 1;
+        console.log(`Metadata: ${auxKey} = ${auxValue}`);
         break;
 
       case 0xFE: // Database selector
-        console.log("Found database selector");
-        cursor += 2; // Move past `FE` and db number (1 byte)
+        cursor += 2; // Skip `FE` and DB number
+        console.log("Database selector encountered");
         break;
 
       case 0xFB: // Resizedb field
-        console.log("Found resizedb field");
-        cursor++; // Move past `FB`
-        cursor = handleLengthEncoding(data, cursor)[1]; // Skip first length
-        cursor = handleLengthEncoding(data, cursor)[1]; // Skip second length
+        cursor++;
+        const normalHashSize = handleLengthEncoding(data, cursor);
+        cursor = normalHashSize[1];
+        const expiryHashSize = handleLengthEncoding(data, cursor);
+        cursor = expiryHashSize[1];
+        console.log(`Resizedb: Normal = ${normalHashSize[0]}, Expiry = ${expiryHashSize[0]}`);
         break;
 
-      case 0xFD: // Expiry time in seconds
-      case 0xFC: // Expiry time in milliseconds
-        console.log(`Found expiry time opcode: ${opcode === 0xFD ? "seconds" : "milliseconds"}`);
+      case 0xFD: // Expiry in seconds
+      case 0xFC: // Expiry in milliseconds
         const expiryLength = opcode === 0xFD ? 4 : 8;
-        cursor += expiryLength + 1; // Skip expiry time and move to the next opcode
-        cursor = processKeyValuePair(data, cursor); // Parse key-value pair
+        cursor += expiryLength + 1;
+        cursor = processKeyValuePair(data, cursor);
         break;
 
-      case 0xFF: // End of RDB file
-        console.log("End of RDB file reached");
-        cursor += 9; // Move past the 8-byte checksum
+      case 0xFF: // End of file
+        console.log("End of RDB file");
+        cursor += 9; // Skip 8-byte checksum
         return map2;
 
       default: // Key-value pair without expiry
-        console.log("Found key-value pair without expiry");
         cursor++;
         cursor = processKeyValuePair(data, cursor);
         break;
