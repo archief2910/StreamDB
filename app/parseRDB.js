@@ -57,10 +57,10 @@ function handleFdAndFc(data, cursor, opcode) {
 
   if (opcode === OPCODES.EXPIRETIME) {
     console.log(`Expiry time in seconds at cursor ${cursor}`);
-    [expiryTime, cursor] = handleExpiryTimeInSeconds(data, cursor);
+    [expiryTime, cursor] = handleExpiryTimeInSeconds(data, cursor + 1);
   } else if (opcode === OPCODES.EXPIRETIMEMS) {
     console.log(`Expiry time in milliseconds at cursor ${cursor}`);
-    [expiryTime, cursor] = handleExpiryTimeInMilliseconds(data, cursor);
+    [expiryTime, cursor] = handleExpiryTimeInMilliseconds(data, cursor + 1);
   } else {
     throw new Error(`Unexpected opcode for expiry time handling: ${opcode}`);
   }
@@ -87,10 +87,9 @@ function traversal(data) {
       cursor = newCursor;
       console.log(`Switched to DB ${dbIndex}`);
     } else if (opcode === OPCODES.RESIZEDB) {
-      // Handle resizedb, but make sure you implement or remove this function
-      cursor++; // Skip RESIZEDB opcode (replace with proper logic if needed)
+      cursor = handleResizedb(data, cursor + 1); // Skip opcode and process resizedb
     } else if (opcode === OPCODES.EXPIRETIME || opcode === OPCODES.EXPIRETIMEMS) {
-      cursor = handleFdAndFc(data, cursor + 1, opcode); // Handle FD/FC and store in map3
+      cursor = handleFdAndFc(data, cursor, opcode); // Handle FD/FC and store in map3
     } else if (opcode === OPCODES.EOF) {
       console.log(`End of file reached at cursor ${cursor}`);
       break;
@@ -100,17 +99,16 @@ function traversal(data) {
     }
   }
 
-  return map2; // Return both map2 (key-value pairs) and map3 (key-expiry pairs)
+  return  map2; // Return both map2 (key-value pairs) and map3 (key-expiry pairs)
 }
 
 function getKeysValues(data) {
-  const map2 = traversal(data); // Populate map2 and map3
+  const  map2 = traversal(data); // Populate map2 and map3
   console.log("Map2 contents:", Array.from(map2.entries()));
   console.log("Map3 contents (with expiry times):", Array.from(map3.entries()));
-  return map2; // Return both maps separately
+  return map2;  // Return both maps separately
 }
 
 module.exports = {
-  getKeysValues,
-  map3
+  getKeysValues,map3
 };
