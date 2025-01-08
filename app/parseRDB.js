@@ -66,25 +66,27 @@ function handleResizedb(data, cursor) {
     if (data[cursor] === 0xFD) {
       // FD format: expiry time in seconds (4 bytes unsigned int)
       cursor++; // Move past 'FD'
-      expiryTime = data[cursor] +
-  (data[cursor + 1] << 8) +
-  (data[cursor + 2] << 16) +
-  (data[cursor + 3] << 24) ; // Read 4-byte unsigned int
+  
+      // Create a DataView to interpret the bytes as a 32-bit unsigned integer
+      const buffer = data.slice(cursor, cursor + 4).buffer;
+      const dataView = new DataView(buffer);
+  
+      // Read the 32-bit unsigned integer in little-endian format (from position 0)
+      const expiryTime = dataView.getUint32(0, true); 
+  
       cursor += 4;
       console.log("Expiry time (seconds): " + expiryTime);
-    } else if (data[cursor] === 0xFC) {
+  }
+   else if (data[cursor] === 0xFC) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
       cursor++;
       console.log('oops'); // Move past 'FC'
-      expiryTime = data[cursor] +
-  (data[cursor + 1] << 8) +
-  (data[cursor + 2] << 16) +
-  (data[cursor + 3] << 24) +
-  (BigInt(data[cursor + 4]) << 32n) +
-  (BigInt(data[cursor + 5]) << 40n) +
-  (BigInt(data[cursor + 6]) << 48n) +
-  (BigInt(data[cursor + 7]) << 56n); // Read 8-byte unsigned long
-      cursor += 8;
+      const buffer = data.slice(cursor, cursor + 8).buffer;
+      const dataView = new DataView(buffer);
+  
+      // Read the 32-bit unsigned integer in little-endian format (from position 0)
+      const expiryTime = dataView.getUint64(0, true); 
+      cursor+=8;
       console.log("Expiry time (milliseconds): " + expiryTime);
     } else {
       console.log(`Unexpected opcode 0x${data[cursor].toString(16).toUpperCase()} at cursor ${cursor}`);
