@@ -36,7 +36,7 @@ const serializeRESP = (obj) => {
 };
 
 let rdb = null; // Initialize RDB to null
-
+let map1=null;
 const addr = new Map();
 const arguments = process.argv.slice(2);
 const [fileDir, fileName] = [arguments[1] ?? null, arguments[3] ?? null];
@@ -54,6 +54,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   if (isDbExists) {
     try {
       rdb = fs.readFileSync(dbPath);
+      map1 = getKeysValues(rdb);
       console.log(`Successfully read RDB file: ${dbPath}`);
     } catch (error) {
       console.error(`Error reading DB at provided path: ${dbPath}`);
@@ -63,7 +64,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   }
 }
 
-const map1 = getKeysValues(rdb);
+
 
 const server = net.createServer((connection) => {
   console.log("Client connected");
