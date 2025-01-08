@@ -71,7 +71,8 @@ function handleResizedb(data, cursor) {
       console.log("Expiry time (seconds): " + expiryTime);
     } else if (data[cursor] === 0xFC) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
-      cursor++; // Move past 'FC'
+      cursor++;
+      console.log('oops'); // Move past 'FC'
       expiryTime = data.readUInt64LE(cursor); // Read 8-byte unsigned long
       cursor += 8;
       console.log("Expiry time (milliseconds): " + expiryTime);
