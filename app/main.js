@@ -55,7 +55,11 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   if (isDbExists) {
     try {
       rdb = fs.readFileSync(dbPath);
-     let {map1,y} = getKeysValues(rdb);
+      const { map1: newMap1, y: newY } = getKeysValues(rdb);
+
+// Assign the new values to the declared variables
+map1 = newMap1;
+y = newY;
      
      console.log('Map3 (Key-ExpiryTime):', map1);
       console.log('Map2 (Key-Value):', y);
