@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { getKeysValues } = require("./parseRDB.js");
  // Load your RDB file
- import {map3} from "./parseRDB.js";
+
 
  // Logs the Map with key-value pairs
 // Function to serialize data into RESP format
@@ -37,7 +37,7 @@ const serializeRESP = (obj) => {
 
 let rdb = null; // Initialize RDB to null
 let map1=new Map();
-
+let y=new Map();
 const addr = new Map();
 const arguments = process.argv.slice(2);
 const [fileDir, fileName] = [arguments[1] ?? null, arguments[3] ?? null];
@@ -55,7 +55,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   if (isDbExists) {
     try {
       rdb = fs.readFileSync(dbPath);
-      map1 = getKeysValues(rdb);
+     let {map1,y} = getKeysValues(rdb);
       console.log(`Successfully read RDB file: ${dbPath}`);
     } catch (error) {
       console.error(`Error reading DB at provided path: ${dbPath}`);
@@ -104,9 +104,9 @@ const server = net.createServer((connection) => {
       let currentTimestamp = Date.now();
       if (map1.has(command[4])){
         console.log('Map3 (Key-ExpiryTime):', map3);
-       if(map3.has(command[4])){
-        console.log(`Key "${map3.get(command[4])}"`)
-        if(map3.get(command[4]) >= currentTimestamp){connection.write(serializeRESP(map1.get(command[4])));}
+       if(y.has(command[4])){
+        console.log(`Key "${y.get(command[4])}"`)
+        if(y.get(command[4]) >= currentTimestamp){connection.write(serializeRESP(map1.get(command[4])));}
         else{connection.write(serializeRESP(null));}
        } 
        else{connection.write(serializeRESP(map1.get(command[4])));}

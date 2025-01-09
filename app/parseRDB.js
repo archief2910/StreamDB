@@ -162,15 +162,15 @@ function traversal(data) {
     }
   }
 
-  return map2;
+  return {map2,map3};
 }
 
 function getKeysValues(data) {
   traversal(data); // Populate map2
   console.log("Map contents:", Array.from(map2.entries()));
-  return map2;
+  return {map2,map3};
 }
-export {map3};
+
 module.exports = {
   getKeysValues,
 };
