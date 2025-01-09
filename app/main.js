@@ -138,13 +138,15 @@ const server = net.createServer((connection) => {
       if (replicaidx !== -1) {
         connection.write(serializeRESP("role:slave"));
       } else {
-        const y1 = [
+        // Construct the bulk string response for the INFO command
+        const info = [
           "role:master",
           "master_repl_offset:0",
           "master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
-        ];
-        const resp = `*${y1.length}\r\n` + y1.map(line => `$${line.length}\r\n${line}`).join("\r\n") + `\r\n`;
-        connection.write(resp);
+        ].join("\r\n"); // Combine lines with \r\n
+        
+        // Send the bulk string response
+        connection.write(`$${info.length}\r\n${info}\r\n`);
       }
     }
     
