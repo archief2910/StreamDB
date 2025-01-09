@@ -67,31 +67,38 @@ function handleResizedb(data, cursor) {
       // FD format: expiry time in seconds (4 bytes unsigned int)
       cursor++; // Move past 'FD'
   
+      // Debugging: Log the raw bytes being read
+      console.log(`Raw bytes for expiry time (FD): ${data.slice(cursor, cursor + 4).toString('hex')}`);
+  
       // Create a DataView to interpret the bytes as a 32-bit unsigned integer
       let buffer = data.slice(cursor, cursor + 4).buffer;
       let dataView = new DataView(buffer);
   
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
-      expiryTime = dataView.getUint32(0, true)*1000; 
+      expiryTime = dataView.getUint32(0, true) * 1000; // Convert seconds to milliseconds
   
       cursor += 4;
       console.log("Expiry time (seconds): " + expiryTime);
 
-  }
-   else if (data[cursor] === 0xFC) {
+    } else if (data[cursor] === 0xFC) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
-      cursor++;
-      console.log('oops'); // Move past 'FC'
-      let d = data.slice(cursor, cursor + 8).buffer;
-      let dataView = new DataView(d);
+      cursor++; // Move past 'FC'
   
-      // Read the 32-bit unsigned integer in little-endian format (from position 0)
-      expiryTime = dataView.getBigUint64(0, true); 
-      cursor+=8;
+      // Debugging: Log the raw bytes being read
+      console.log(`Raw bytes for expiry time (FC): ${data.slice(cursor, cursor + 8).toString('hex')}`);
+  
+      let buffer = data.slice(cursor, cursor + 8).buffer;
+      let dataView = new DataView(buffer);
+  
+      // Read the 64-bit unsigned integer in little-endian format (from position 0)
+      expiryTime = dataView.getBigUint64(0, true); // Milliseconds
+  
+      cursor += 8;
       console.log("Expiry time (milliseconds): " + expiryTime);
+
     } else {
       console.log(`Unexpected opcode 0x${data[cursor].toString(16).toUpperCase()} at cursor ${cursor}`);
-      cursor++; // Move to next byte (this might need to be more specific)
+      cursor++; // Move to the next byte (this might need to be more specific)
     }
 
     // Move past the value-type byte
@@ -113,21 +120,25 @@ function handleResizedb(data, cursor) {
     // Extract the value based on the value length
     const value = data.toString('utf8', cursor, cursor + valueLength);
     cursor += valueLength;
-    map2.set(key, value);
+
     // Process the value based on valueType (this part could be extended for different value types)
     console.log(`Key: ${key}, Value: ${value}`);
+
+    // Store the key-value pair in map2 (assuming map2 is already defined somewhere in your code)
+    map2.set(key, value);
 
     // If expiry time is present, store it in map3 with the key
     if (expiryTime !== null) {
       map3.set(key, expiryTime);
     }
   }
-  
+
   // Optionally, you can return map3 if needed for further processing
   console.log('Map3 (Key-ExpiryTime):', map3);
 
   return cursor;
 }
+
 
 
 
