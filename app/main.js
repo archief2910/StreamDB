@@ -55,11 +55,10 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   if (isDbExists) {
     try {
       rdb = fs.readFileSync(dbPath);
-     let {m1,m2} = getKeysValues(rdb);
-     map1=m1;
-     y=m2;
-     console.log('Map3 (Key-ExpiryTime):', m1);
-      console.log('Map2 (Key-Value):', m2);
+     let {map1,y} = getKeysValues(rdb);
+     
+     console.log('Map3 (Key-ExpiryTime):', map1);
+      console.log('Map2 (Key-Value):', y);
       console.log(`Successfully read RDB file: ${dbPath}`);
     } catch (error) {
       console.error(`Error reading DB at provided path: ${dbPath}`);
