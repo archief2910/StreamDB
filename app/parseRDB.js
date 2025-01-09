@@ -58,7 +58,7 @@ function handleResizedb(data, cursor) {
   // Now read each key-value pair
   for (let i = 0; i < hashTableSize; i++) {
     let expiryTime = null;
-    console.log(` ${expiryTime} `);
+    console.log(` ${Date.now()} `);
     // Debugging: Log the current byte value at the cursor
     console.log(`Current byte at cursor ${cursor}: 0x${data[cursor].toString(16).toUpperCase()}`);
 
