@@ -3,9 +3,9 @@ const fs = require("fs");
 const path = require("path");
 const { getKeysValues,h } = require("./parseRDB.js");
  // Load your RDB file
- const portIdx = process.argv.indexOf("--port")
+ const portIdx = process.argv.indexOf("--port");
+ const replicaidx = process.argv.indexOf("--replicaof");
  const PORT = portIdx == -1 ? 6379 : process.argv[portIdx + 1]
- 
 
  // Logs the Map with key-value pairs
 // Function to serialize data into RESP format
@@ -134,7 +134,15 @@ const server = net.createServer((connection) => {
 
   // Send the serialized response
   connection.write(respKeys);
-    } else {
+    }else if (command[2] === "INFO"){
+       if(replicaidx===-1){
+        connection.write(serializeRESP("role:slave"));
+       }
+       else{
+        connection.write(serializeRESP("role:master") + serializeRESP("master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb") + serializeRESP("master_repl_offset:0"));
+       }
+    }
+     else {
       connection.write(serializeRESP("ERR unknown command"));
     }
   });
