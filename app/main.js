@@ -1,9 +1,9 @@
 const net = require("net");
 const fs = require("fs");
 const path = require("path");
-const { getKeysValues ,map3} = require("./parseRDB.js");
+const { getKeysValues } = require("./parseRDB.js");
  // Load your RDB file
-
+ import {map3} from "./parseRDB.js";
 
  // Logs the Map with key-value pairs
 // Function to serialize data into RESP format

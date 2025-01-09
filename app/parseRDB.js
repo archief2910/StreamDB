@@ -170,7 +170,7 @@ function getKeysValues(data) {
   console.log("Map contents:", Array.from(map2.entries()));
   return map2;
 }
-
+export {map3};
 module.exports = {
-  getKeysValues,map3,
+  getKeysValues,
 };
