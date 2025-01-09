@@ -102,7 +102,7 @@ const server = net.createServer((connection) => {
     } else if (command[2] === "GET") {
       if (map1.has(command[4]) ) {
        if(map3.has(command[4]) ){
-        if(map3.get(command[4]) >= Date.now()) {connection.write(serializeRESP(map1.get(command[4])));}
+        if(map3.get(command[4]) > Date.now()) {connection.write(serializeRESP(map1.get(command[4])));}
         else{connection.write(serializeRESP(null));}
        } 
        else{connection.write(serializeRESP(map1.get(command[4])));}
