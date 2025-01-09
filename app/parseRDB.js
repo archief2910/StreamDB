@@ -85,13 +85,10 @@ function handleResizedb(data, cursor) {
       cursor++; // Move past 'FC'
   
       // Debugging: Log the raw bytes being read
-      console.log(`Raw bytes for expiry time (FC): ${data.slice(cursor, cursor + 8).buffer}`);
-  
-      let buffer = data.slice(cursor, cursor + 8).buffer;
-      let dataView = new DataView(buffer);
-  
-      // Read the 64-bit unsigned integer in little-endian format (from position 0)
-      expiryTime = dataView.getBigUint64(0, true); // Milliseconds
+      console.log(`Raw bytes for expiry time (FC): ${data.slice(cursor, cursor + 8).toString('hex')}`);
+      let reversedBytes = data.slice(cursor, cursor + 8).reverse();
+      let dataView = new DataView(reversedBytes.buffer);
+      let expiryTime = dataView.getBigUint64(0, true); // Milliseconds
   
       cursor += 8;
       console.log("Expiry time (milliseconds): " + expiryTime);
