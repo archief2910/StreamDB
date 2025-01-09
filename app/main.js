@@ -103,6 +103,7 @@ const server = net.createServer((connection) => {
       console.log(`balle`);
       let currentTimestamp = Date.now();
       if (map1.has(command[4])){
+        console.log('Map3 (Key-ExpiryTime):', map3);
        if(map3.has(command[4])){
         console.log(`Key "${map3.get(command[4])}"`)
         if(map3.get(command[4]) >= currentTimestamp){connection.write(serializeRESP(map1.get(command[4])));}
