@@ -52,7 +52,7 @@ function handleResizedb(data, cursor) {
   console.log(`Resized DB: Hash Table Size = ${hashTableSize}, Expire Table Size = ${expireTableSize}`);
 
   // Initialize map to store key-expiry time pairs
-  const map3 = new Map();
+  
   console.log('Initializing');
 
   // Now read each key-value pair
