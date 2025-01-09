@@ -82,8 +82,8 @@ function handleResizedb(data, cursor) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
       cursor++;
       console.log('oops'); // Move past 'FC'
-      let buffer = data.slice(cursor, cursor + 8).buffer;
-      let dataView = new DataView(buffer);
+      let d = data.slice(cursor, cursor + 8).buffer;
+      let dataView = new DataView(d);
   
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
       expiryTime = dataView.getBigUint64(0, true); 
