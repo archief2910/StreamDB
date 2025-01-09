@@ -64,15 +64,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
 }
-const currentTimeInMilliseconds = Date.now(); // Current time in milliseconds
 
-// Iterate through map3 and remove expired keys
-map3.forEach((expiryTime, key) => {
-  if (expiryTime <= currentTimeInMilliseconds) {
-    console.log(`Key ${key} has expired and will be removed.`);
-    map3.delete(key); // Remove expired key
-  }
-});
 
 
 const server = net.createServer((connection) => {
@@ -108,8 +100,12 @@ const server = net.createServer((connection) => {
 
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
-      if (map1.has(command[4]) && map3.has(command[4])) {
-        connection.write(serializeRESP(map1.get(command[4])));
+      if (map1.has(command[4]) ) {
+       if(map3.has(command[4]) ){
+        if(map3.get(command[4]) >= Date.now()) {connection.write(serializeRESP(map1.get(command[4])));}
+        else{connection.write(serializeRESP(null));}
+       } 
+       else{connection.write(serializeRESP(map1.get(command[4])));}
       } else {
         connection.write(serializeRESP(null));
       }
