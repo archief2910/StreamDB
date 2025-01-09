@@ -3,7 +3,9 @@ const fs = require("fs");
 const path = require("path");
 const { getKeysValues,h } = require("./parseRDB.js");
  // Load your RDB file
-
+ const portIdx = process.argv.indexOf("--port")
+ const PORT = portIdx == -1 ? 6379 : process.argv[portIdx + 1]
+ 
 
  // Logs the Map with key-value pairs
 // Function to serialize data into RESP format
@@ -138,4 +140,4 @@ const server = net.createServer((connection) => {
   });
 });
 
-server.listen(6379, "127.0.0.1");
+server.listen(PORT, "127.0.0.1");
