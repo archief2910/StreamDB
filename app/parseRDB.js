@@ -121,7 +121,15 @@ function handleResizedb(data, cursor) {
       map3.set(key, expiryTime);
     }
   }
+  const currentTimeInSeconds = Math.floor(Date.now() / 1000);  // Current time in seconds
 
+  // Iterate through map3 and remove expired keys
+  map3.forEach((expiryTime, key) => {
+    if (expiryTime <= currentTimeInSeconds) {
+      console.log(`Key ${key} has expired and will be removed.`);
+      map3.delete(key);  // Remove expired key
+    }
+  });
   // Optionally, you can return map3 if needed for further processing
   console.log('Map3 (Key-ExpiryTime):', map3);
 
