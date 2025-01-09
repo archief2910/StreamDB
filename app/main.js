@@ -55,7 +55,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   if (isDbExists) {
     try {
       rdb = fs.readFileSync(dbPath);
-     let {m1,m2} = getKeysValues(rdb);
+     const {m1,m2} = getKeysValues(rdb);
      map1=m1;
      y=m2;
       console.log(`Successfully read RDB file: ${dbPath}`);
