@@ -100,6 +100,7 @@ const server = net.createServer((connection) => {
 
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
+      console.log(`balle`);
       let currentTimestamp = Date.now();
       if (map1.has(command[4])){
        if(map3.has(command[4])){
