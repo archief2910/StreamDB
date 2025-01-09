@@ -72,10 +72,11 @@ function handleResizedb(data, cursor) {
       let dataView = new DataView(buffer);
   
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
-      expiryTime = dataView.getUint32(0, true); 
+      expiryTime = dataView.getUint32(0, true)*1000; 
   
       cursor += 4;
       console.log("Expiry time (seconds): " + expiryTime);
+
   }
    else if (data[cursor] === 0xFC) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
@@ -121,15 +122,15 @@ function handleResizedb(data, cursor) {
       map3.set(key, expiryTime);
     }
   }
-  const currentTimeInSeconds = Math.floor(Date.now() / 1000);  // Current time in seconds
+  const currentTimeInMilliseconds = Date.now(); // Current time in milliseconds
 
-  // Iterate through map3 and remove expired keys
-  map3.forEach((expiryTime, key) => {
-    if (expiryTime <= currentTimeInSeconds) {
-      console.log(`Key ${key} has expired and will be removed.`);
-      map3.delete(key);  // Remove expired key
-    }
-  });
+// Iterate through map3 and remove expired keys
+map3.forEach((expiryTime, key) => {
+  if (expiryTime <= currentTimeInMilliseconds) {
+    console.log(`Key ${key} has expired and will be removed.`);
+    map3.delete(key); // Remove expired key
+  }
+});
   // Optionally, you can return map3 if needed for further processing
   console.log('Map3 (Key-ExpiryTime):', map3);
 

@@ -64,13 +64,13 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
 }
-const currentTimeInSeconds = Math.floor(Date.now() / 1000);  // Current time in seconds
+const currentTimeInMilliseconds = Date.now(); // Current time in milliseconds
 
 // Iterate through map3 and remove expired keys
 map3.forEach((expiryTime, key) => {
-  if (expiryTime <= currentTimeInSeconds) {
+  if (expiryTime <= currentTimeInMilliseconds) {
     console.log(`Key ${key} has expired and will be removed.`);
-    map3.delete(key);  // Remove expired key
+    map3.delete(key); // Remove expired key
   }
 });
 
