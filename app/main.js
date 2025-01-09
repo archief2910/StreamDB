@@ -1,7 +1,7 @@
 const net = require("net");
 const fs = require("fs");
 const path = require("path");
-const { getKeysValues } = require("./parseRDB.js");
+const { getKeysValues,h } = require("./parseRDB.js");
  // Load your RDB file
 
 
@@ -37,7 +37,7 @@ const serializeRESP = (obj) => {
 
 let rdb = null; // Initialize RDB to null
 let map1=new Map();
-let y=new Map();
+let map3 = new Map();
 const addr = new Map();
 const arguments = process.argv.slice(2);
 const [fileDir, fileName] = [arguments[1] ?? null, arguments[3] ?? null];
@@ -55,24 +55,13 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   if (isDbExists) {
     try {
       rdb = fs.readFileSync(dbPath);
-      const result = getKeysValues(rdb);  // Check the result of the function
-      console.log(result);  // Check what is returned from the function
-    
-      if (result) {
-        const { map1: newMap1, y: newY } = result;
-        map1 = newMap1;
-        y = newY;
-        
-        console.log('Map3 (Key-ExpiryTime):', map1);
-        console.log('Map2 (Key-Value):', y);
-      } else {
-        console.log('getKeysValues returned null or undefined');
-      }
+      map1 = getKeysValues(rdb);
+      map3= h(rdb);
+      console.log(` ${map3}`); console.log(` ${map1}`);
       console.log(`Successfully read RDB file: ${dbPath}`);
     } catch (error) {
       console.error(`Error reading DB at provided path: ${dbPath}`);
     }
-    
   } else {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
@@ -116,12 +105,12 @@ const server = net.createServer((connection) => {
       console.log(`balle`);
       let currentTimestamp = Date.now();
       if (map1.has(command[4])){
-        console.log('Map3 (Key-ExpiryTime):', y);
-       if(y.has(command[4])){
-        console.log(`Key "${y.get(command[4])}"`)
-        if(y.get(command[4]) >= currentTimestamp){connection.write(serializeRESP(map1.get(command[4])));}
+        console.log('Map3 (Key-ExpiryTime):', map3);
+       if(map3.has(command[4])){
+        console.log(`Key "${map3.get(command[4])}"`)
+        if(map3.get(command[4]) >= currentTimestamp){connection.write(serializeRESP(map1.get(command[4])));}
         else{connection.write(serializeRESP(null));}
-       }
+       } 
        else{connection.write(serializeRESP(map1.get(command[4])));}
       } else {
         connection.write(serializeRESP(null));

@@ -167,10 +167,15 @@ function traversal(data) {
 function getKeysValues(data) {
   traversal(data); // Populate map2
   console.log("Map contents:", Array.from(map2.entries()));
+  
+  return map2;
+}
+function h(data){
+  traversal(data); 
   console.log("Map contents:", Array.from(map3.entries()));
-  return {map2,map3};
+   return map3;
 }
 
 module.exports = {
-  getKeysValues,
+  getKeysValues,h,
 };
