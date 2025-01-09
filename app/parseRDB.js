@@ -168,6 +168,7 @@ function traversal(data) {
 function getKeysValues(data) {
   traversal(data); // Populate map2
   console.log("Map contents:", Array.from(map2.entries()));
+  console.log("Map contents:", Array.from(map3.entries()));
   return {map2,map3};
 }
 
