@@ -56,17 +56,23 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     try {
       rdb = fs.readFileSync(dbPath);
       const result = getKeysValues(rdb);  // Check the result of the function
-      console.log(result);
-// Assign the new values to the declared variables
-map1 = newMap1;
-y = newY;
-     
-     console.log('Map3 (Key-ExpiryTime):', map1);
-      console.log('Map2 (Key-Value):', y);
+      console.log(result);  // Check what is returned from the function
+    
+      if (result) {
+        const { map1: newMap1, y: newY } = result;
+        map1 = newMap1;
+        y = newY;
+        
+        console.log('Map3 (Key-ExpiryTime):', map1);
+        console.log('Map2 (Key-Value):', y);
+      } else {
+        console.log('getKeysValues returned null or undefined');
+      }
       console.log(`Successfully read RDB file: ${dbPath}`);
     } catch (error) {
       console.error(`Error reading DB at provided path: ${dbPath}`);
     }
+    
   } else {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
