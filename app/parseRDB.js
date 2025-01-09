@@ -57,8 +57,8 @@ function handleResizedb(data, cursor) {
 
   // Now read each key-value pair
   for (let i = 0; i < hashTableSize; i++) {
-    const expiryTime = null;
-
+    let expiryTime = null;
+    console.log(` ${expiryTime} `);
     // Debugging: Log the current byte value at the cursor
     console.log(`Current byte at cursor ${cursor}: 0x${data[cursor].toString(16).toUpperCase()}`);
 
@@ -68,8 +68,8 @@ function handleResizedb(data, cursor) {
       cursor++; // Move past 'FD'
   
       // Create a DataView to interpret the bytes as a 32-bit unsigned integer
-      const buffer = data.slice(cursor, cursor + 4).buffer;
-      const dataView = new DataView(buffer);
+      let buffer = data.slice(cursor, cursor + 4).buffer;
+      let dataView = new DataView(buffer);
   
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
       expiryTime = dataView.getUint32(0, true)*1000; 
@@ -82,8 +82,8 @@ function handleResizedb(data, cursor) {
       // FC format: expiry time in milliseconds (8 bytes unsigned long)
       cursor++;
       console.log('oops'); // Move past 'FC'
-      const d = data.slice(cursor, cursor + 8).buffer;
-      const dataView = new DataView(d);
+      let d = data.slice(cursor, cursor + 8).buffer;
+      let dataView = new DataView(d);
   
       // Read the 32-bit unsigned integer in little-endian format (from position 0)
       expiryTime = dataView.getBigUint64(0, true); 
