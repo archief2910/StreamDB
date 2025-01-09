@@ -85,7 +85,7 @@ function handleResizedb(data, cursor) {
       cursor++; // Move past 'FC'
   
       // Debugging: Log the raw bytes being read
-      console.log(`Raw bytes for expiry time (FC): ${data.slice(cursor, cursor + 8)}`);
+      console.log(`Raw bytes for expiry time (FC): ${data.slice(cursor, cursor + 8).buffer}`);
   
       let buffer = data.slice(cursor, cursor + 8).buffer;
       let dataView = new DataView(buffer);
