@@ -162,7 +162,6 @@ function traversal(data) {
     }
   }
 
-  return {map2,map3};
 }
 
 function getKeysValues(data) {
