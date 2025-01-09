@@ -134,15 +134,20 @@ const server = net.createServer((connection) => {
 
   // Send the serialized response
   connection.write(respKeys);
-    }else if (command[2] === "INFO"){
-       if(replicaidx!==-1){
+    }else if (command[2] === "INFO") {
+      if (replicaidx !== -1) {
         connection.write(serializeRESP("role:slave"));
-       }
-       else{
-        const y1=`role:master\r\nmaster_repl_offset:0\r\nmaster_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb`;
-        connection.write(`*${y.length}\r\n` + y +`\r\n`);
-       }
+      } else {
+        const y1 = [
+          "role:master",
+          "master_repl_offset:0",
+          "master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb"
+        ];
+        const resp = `*${y1.length}\r\n` + y1.map(line => `$${line.length}\r\n${line}`).join("\r\n") + `\r\n`;
+        connection.write(resp);
+      }
     }
+    
      else {
       connection.write(serializeRESP("ERR unknown command"));
     }
