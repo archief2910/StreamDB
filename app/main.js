@@ -139,7 +139,8 @@ const server = net.createServer((connection) => {
         connection.write(serializeRESP("role:slave"));
        }
        else{
-        connection.write(serializeRESP("role:master","master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb","master_repl_offset:0") );
+        const y1=`role:master\r\nmaster_repl_offset:0\r\nmaster_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb`;
+        connection.write(`*${y.length}\r\n` + y +`\r\n`);
        }
     }
      else {
