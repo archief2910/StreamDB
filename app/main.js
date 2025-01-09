@@ -135,7 +135,7 @@ const server = net.createServer((connection) => {
   // Send the serialized response
   connection.write(respKeys);
     }else if (command[2] === "INFO"){
-       if(replicaidx===-1){
+       if(replicaidx!==-1){
         connection.write(serializeRESP("role:slave"));
        }
        else{
