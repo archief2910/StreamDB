@@ -95,7 +95,7 @@ function handleResizedb(data, cursor) {
 
     } else {
       console.log(`Unexpected opcode 0x${data[cursor].toString(16).toUpperCase()} at cursor ${cursor}`);
-      cursor++; // Move to the next byte (this might need to be more specific)
+       // Move to the next byte (this might need to be more specific)
     }
 
     // Move past the value-type byte
