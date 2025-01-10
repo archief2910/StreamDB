@@ -185,7 +185,7 @@ const server = net.createServer((connection) => {
         else{connection.write(serializeRESP(null));}
        } 
        else{connection.write(serializeRESP(map1.get(command[4])));}
-      } else {
+      } else {console.log("balle2");
         connection.write(serializeRESP(null));
       }
     } else if (command[2] === "CONFIG" && command[4] === "GET") {
