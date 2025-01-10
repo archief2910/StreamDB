@@ -206,7 +206,7 @@ const server = net.createServer((connection) => {
       }
     } else if (command[2] === "REPLCONF" && command[3] === "listening-port" && replicaidx ===-1) {
       connection.write("+OK\r\n");
-    } else if (command[2] === "REPLCONF" && command.slice(3).join(" ") === "capa eof capa psync2"  && replicaidx ===-1) {
+    } else if (command[2] === "REPLCONF" && command.slice(3).join(" ") === "capa psync2"  && replicaidx ===-1) {
       connection.write("+OK\r\n");
     } else if (command[2] === "PSYNC" && command[3] === "? -1"   && replicaidx ===-1) {
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
