@@ -81,7 +81,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
 }
-
+/*
 if(replicaidx !==-1) {
 
 const master = net.createConnection({ host: masterArray[0], port: masterArray[1] }, () => {
@@ -126,7 +126,7 @@ function sendCommand(command, expectedResponse, callback) {
 
 
 
-}
+}*/
 
 const server = net.createServer((connection) => {
   console.log("Client connected");
