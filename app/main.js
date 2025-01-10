@@ -80,11 +80,11 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
     console.log("PING acknowledged");
 
     // Send REPLCONF listening-port
-    sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT}\r\n${PORT}\r\n`, "+OK\r\n", () => {
+    sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT.length}\r\n${PORT}\r\n`, "+OK\r\n", () => {
       console.log("REPLCONF listening-port acknowledged");
 
       // Send REPLCONF capa eof capa psync2
-      sendCommand("*5\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$3\r\neof\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", "+OK\r\n", () => {
+      sendCommand("*5\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", "+OK\r\n", () => {
         console.log("REPLCONF capa acknowledged");
 
         // Send PSYNC ? -1
