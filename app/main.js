@@ -92,16 +92,17 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
         sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
           console.log("PSYNC acknowledged");
           master.on("data", (data) => {
-            console.log("Received data:", data.toString());
+            
             const command = Buffer.from(data).toString().split("\r\n");
             if (command[2] === "PING") {
-              master.write(serializeRESP("PONG"));
+             
             } else if (command[2] === "ECHO") {
               const str = command[4];
-              master.write(serializeRESP(str));
+             
             } else if (command[2] === "SET") {
              console.log("suhani teri mkc");
               map1.set(command[4], command[6]);
+              console.log("suhani randi");
               if (command.length >= 8 && command[8] === "px") {
                 let interval = parseInt(command[10], 10);
                 let start = Date.now();
@@ -116,7 +117,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
                 }
                 setTimeout(accurateTimeout, interval);
               }
-              master.write(serializeRESP(true));
+             
             } else if (command[2] === "GET") {
               
               console.log(`balle`);
@@ -125,20 +126,18 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
                 console.log('Map3 (Key-ExpiryTime):', map3);
                if(map3.has(command[4])){
                 console.log(`Key "${map3.get(command[4])}"`)
-                if(map3.get(command[4]) >= currentTimestamp){master.write(serializeRESP(map1.get(command[4])));}
-                else{master.write(serializeRESP(null));}
+                if(map3.get(command[4]) >= currentTimestamp){}
+                else{}
                } 
-               else{master.write(serializeRESP(map1.get(command[4])));}
+               else{}
               } else {
-                master.write(serializeRESP(null));
+                
               }
             } else if (command[2] === "CONFIG" && command[4] === "GET") {
               if (addr.has(command[6])) {
-                master.write(
-                  serializeRESP([command[6], addr.get(command[6])])
-                );
+                
               } else {
-                master.write(serializeRESP(null));
+              
               }
             } else if (command[2] === "KEYS") {
               
@@ -147,10 +146,10 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
           // Serialize keys into RESP format
           const respKeys = `*${keys.length}\r\n` + keys.map(key => `$${key.length}\r\n${key}\r\n`).join('');
           // Send the serialized response
-          master.write(respKeys);
+          
             }else if (command[2] === "INFO") {
               if (replicaidx !== -1) {
-                master.write(serializeRESP("role:slave"));
+                
               } else {
                 // Construct the bulk string response for the INFO command
                 const info = [
@@ -160,10 +159,10 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
                 ].join("\r\n"); // Combine lines with \r\n
                 
                 // Send the bulk string response
-                master.write(`$${info.length}\r\n${info}\r\n`);
+                
               }}
              else {
-              master.write(serializeRESP("ERR unknown command"));
+              
             }
           });
           master.end();
