@@ -80,7 +80,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
     console.log("PING acknowledged");
 
     // Send REPLCONF listening-port
-    sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT.length}\r\n${PORT}\r\n`, "+OK\r\n", () => {
+    sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT}\r\n${PORT}\r\n`, "+OK\r\n", () => {
       console.log("REPLCONF listening-port acknowledged");
 
       // Send REPLCONF capa eof capa psync2
@@ -120,41 +120,6 @@ master.on("end", () => {
   console.log("Disconnected from the master server");
 });
 
-} 
-else{
-// Create the master server
-const masterServer = net.createServer((socket) => {
-  console.log("Replica connected");
-
-  socket.on("data", (data) => {
-    const command = data.toString().trim().split("\r\n");
-    console.log("Received command:", command);
-
-    if (command[2] === "PING") {
-      socket.write("+PONG\r\n");
-    } else if (command[2] === "REPLCONF" && command[3] === "listening-port") {
-      socket.write("+OK\r\n");
-    } else if (command[2] === "REPLCONF" && command.slice(3).join(" ") === "capa eof capa psync2") {
-      socket.write("+OK\r\n");
-    } else if (command[2] === "PSYNC" && command[3] === "? -1") {
-      socket.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
-    } else {
-      socket.write("-ERR Unknown command\r\n");
-    }
-  });
-
-  socket.on("end", () => {
-    console.log("Replica disconnected");
-  });
-
-  socket.on("error", (err) => {
-    console.error("Socket error:", err.message);
-  });
-});
-
-masterServer.listen(PORT, () => {
-  console.log("Master server listening on port 6379");
-});
 }
 const server = net.createServer((connection) => {
   console.log("Client connected");
@@ -239,8 +204,13 @@ const server = net.createServer((connection) => {
         // Send the bulk string response
         connection.write(`$${info.length}\r\n${info}\r\n`);
       }
+    } else if (command[2] === "REPLCONF" && command[3] === "listening-port" && replicaidx ===-1) {
+      connection.write("+OK\r\n");
+    } else if (command[2] === "REPLCONF" && command.slice(3).join(" ") === "capa eof capa psync2"  && replicaidx ===-1) {
+      connection.write("+OK\r\n");
+    } else if (command[2] === "PSYNC" && command[3] === "? -1"   && replicaidx ===-1) {
+      connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
     }
-    
      else {
       connection.write(serializeRESP("ERR unknown command"));
     }
