@@ -138,9 +138,7 @@ function sendCommand(command, expectedResponse, callback) {
 master.on("error", (err) => {
   console.error("Connection error:", err.message);
 });
-master.on("end", () => {
-  console.log("Disconnected from the master server");
-});
+
 }
 const server = net.createServer((connection) => {
   console.log("Client connected");
