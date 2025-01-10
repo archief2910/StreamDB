@@ -113,7 +113,8 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
           master.on("data", (data) => {
             const requests = parseCommandChunks(data.toString());
             console.log(requests);
-        requests.forEach(command => {
+        requests.forEach(request => {
+          let command = Buffer.from(request).toString().split("\r\n");
           if (command[2] === "SET") {
             console.log(command[4]);
              map1.set(command[4], command[6]);
