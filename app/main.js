@@ -136,7 +136,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
                setTimeout(accurateTimeout, interval);
              }
             
-           }else if(command[2] === "REPLCONF" && command[4] === "getack"){master.write(`*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$${String(offset).length}\r\n${offset}\r\n`);}
+           }else if(command[2] === "REPLCONF" && command[4] === "GETACK"){master.write(`*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$${String(offset).length}\r\n${offset}\r\n`);}
            offset += request.length;
         });
              
