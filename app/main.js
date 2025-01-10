@@ -115,7 +115,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
              
             }
           });
-          master.end();
+         
         });
       });
     });
