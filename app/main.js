@@ -112,6 +112,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
           console.log("PSYNC acknowledged");
           master.on("data", (data) => {
             const requests = parseCommandChunks(data.toString());
+            console.log(requests);
         requests.forEach(command => {
           if (command[2] === "SET") {
             console.log(command[4]);
