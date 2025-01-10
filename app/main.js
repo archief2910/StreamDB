@@ -8,6 +8,18 @@ const { getKeysValues,h } = require("./parseRDB.js");
  const PORT = portIdx == -1 ? 6379 : process.argv[portIdx + 1]
  const masterString = replicaidx == -1 ? "" : process.argv[replicaidx + 1]
  const masterArray = masterString.split(" ")
+ const replicaConnections = new Map();
+ function broadcastToReplicas(message) {
+  replicaConnections.forEach((conn, address) => {
+      try {
+          conn.write(message);
+          console.log(`Message sent to replica: ${address}`);
+      } catch (error) {
+          console.error(`Failed to send message to ${address}:`, error);
+      }
+  });
+}
+
  // Logs the Map with key-value pairs
 // Function to serialize data into RESP format
 const serializeRESP = (obj) => {
@@ -125,6 +137,7 @@ const server = net.createServer((connection) => {
   console.log("Client connected");
 
   connection.on("data", (data) => {
+    broadcastToReplicas(data);
     const command = Buffer.from(data).toString().split("\r\n");
 
 
@@ -205,11 +218,23 @@ const server = net.createServer((connection) => {
         connection.write(`$${info.length}\r\n${info}\r\n`);
       }
     } else if (command[2] === "REPLCONF" && command[4] === "listening-port" && replicaidx ===-1) {
+
       connection.write("+OK\r\n");
     } else if (command[2] === "REPLCONF" && command[4] === "capa"  && replicaidx ===-1) {
       connection.write("+OK\r\n");
     } else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
+      const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
+      if (!replicaConnections.has(clientAddress)) {
+          replicaConnections.set(clientAddress, connection);
+          console.log(`Replica added: ${clientAddress}`);
+      }
+      const base64 = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog=="
+      const rdbBuffer = Buffer.from(base64, "base64");
+      const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`)
+      
+   
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
+      connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     }
      else {
       connection.write(serializeRESP("ERR unknown command"));
