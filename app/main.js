@@ -137,7 +137,7 @@ const server = net.createServer((connection) => {
   console.log("Client connected");
 
   connection.on("data", (data) => {
-    broadcastToReplicas(data);
+   
     const command = Buffer.from(data).toString().split("\r\n");
 
 
@@ -152,6 +152,7 @@ const server = net.createServer((connection) => {
       const str = command[4];
       connection.write(serializeRESP(str));
     } else if (command[2] === "SET") {
+      broadcastToReplicas(data);
       map1.set(command[4], command[6]);
 
       if (command.length >= 8 && command[8] === "px") {
@@ -173,6 +174,7 @@ const server = net.createServer((connection) => {
 
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
+      broadcastToReplicas(data);
       console.log(`balle`);
       let currentTimestamp = Date.now();
       if (map1.has(command[4])){
@@ -195,6 +197,7 @@ const server = net.createServer((connection) => {
         connection.write(serializeRESP(null));
       }
     } else if (command[2] === "KEYS") {
+      broadcastToReplicas(data);
      // Get all keys from map1
   const keys = Array.from(map1.keys());
 
