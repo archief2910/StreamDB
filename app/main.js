@@ -84,7 +84,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
       console.log("REPLCONF listening-port acknowledged");
 
       // Send REPLCONF capa eof capa psync2
-      sendCommand("*5\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", "+OK\r\n", () => {
+      sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n`, "+OK\r\n", () => {
         console.log("REPLCONF capa acknowledged");
 
         // Send PSYNC ? -1
