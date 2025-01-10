@@ -137,12 +137,10 @@ const server = net.createServer((connection) => {
  const masterConnection = net.createConnection({ host: masterarray[0], port: masterarray[1] }, () => {
    console.log("Connected to the master server");
 
-   // Handle commands from master (for replica)
    masterConnection.on('data', (data) => {
      const command = Buffer.from(data).toString().split("\r\n");
 
      if (command[2] === "SET") {
-       // Forward the SET commands to replica's map
        map1.set(command[4], command[6]);
 
        if (command.length >= 8 && command[8] === "px") {
