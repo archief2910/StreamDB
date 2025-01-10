@@ -81,7 +81,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
 }
-
+/*
 if(replicaidx !==-1) {
 
 const master = net.createConnection({ host: masterArray[0], port: masterArray[1] }, () => {
@@ -103,63 +103,14 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
         sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
           console.log("PSYNC acknowledged");
           listenForReplicationData();
-        
+          
         });
       });
     });
   });
 });
  // Function to listen for replication data after handshake
-  function listenForReplicationData() {
-   
-      master.on("data", (data) => {
-        const command = Buffer.from(data).toString().split("\r\n");
-        console.log(`Received command: ${command[2]}`);
 
-        // Handle replication of SET command
-        if (command[2] === "SET") {
-          const key = command[4];
-          const value = command[6];
-          map1.set(key, value); // Store the replicated data in local map
-
-          // Handle expiration logic
-          if (command.length >= 8 && command[8] === "px") {
-            let interval = parseInt(command[10], 10);
-            let start = Date.now();
-
-            function accurateTimeout() {
-              let elapsed = Date.now() - start;
-              if (elapsed >= interval) {
-                map1.delete(key);
-                console.log(`Key "${key}" deleted after ${interval} ms`);
-              } else {
-                setTimeout(accurateTimeout, interval - elapsed);
-              }
-            }
-
-            setTimeout(accurateTimeout, interval);
-          }
-
-        } else if (command[2] === "GET") {
-          // Respond with the local value from map1 if it exists
-          if (map1.has(command[4])) {
-            master.write(serializeRESP(map1.get(command[4])));
-          } else {
-            master.write(serializeRESP(null));
-          }
-        }
-      });
-
-      master.on("error", (err) => {
-        console.error("Replication connection error:", err.message);
-      });
-
-      master.on("end", () => {
-        console.log("Replica disconnected from master");
-      });
-    
-  }
-// Helper function to send a command and wait for acknowledgment
 function sendCommand(command, expectedResponse, callback) {
   master.write(command);
   master.once("data", (data) => {
@@ -173,27 +124,53 @@ function sendCommand(command, expectedResponse, callback) {
   });
 }
 
-// Handle errors
-master.on("error", (err) => {
-  console.error("Connection error:", err.message);
-});
 
 
-
-}
+}*/
 
 const server = net.createServer((connection) => {
   console.log("Client connected");
 
+  if (replicaidx !== -1) {
+    console.log("Connected to the master server");
+
+    // Send PING
+    sendCommand("*1\r\n$4\r\nPING\r\n", "+PONG\r\n", () => {
+      console.log("PING acknowledged");
+
+      // Send REPLCONF listening-port
+      sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT.length}\r\n${PORT}\r\n`, "+OK\r\n", () => {
+        console.log("REPLCONF listening-port acknowledged");
+
+        // Send REPLCONF capa eof capa psync2
+        sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n`, "+OK\r\n", () => {
+          console.log("REPLCONF capa acknowledged");
+
+          // Send PSYNC ? -1
+          sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
+            console.log("PSYNC acknowledged");
+          });
+        });
+      });
+    });
+
+    function sendCommand(command, expectedResponse, callback) {
+      master.write(command);
+      master.once("data", (data) => {
+        const response = data.toString();
+        console.log("Received:", response.trim());
+        if (response.startsWith(expectedResponse)) {
+          callback();
+        } else {
+          console.error("Unexpected response:", response.trim());
+        }
+      });
+    }
+  }
+
   connection.on("data", (data) => {
-   
     const command = Buffer.from(data).toString().split("\r\n");
-
-
-
-
-
-
+    console.log("Received command:", command);
 
     if (command[2] === "PING") {
       connection.write(serializeRESP("PONG"));
@@ -224,38 +201,35 @@ const server = net.createServer((connection) => {
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
       broadcastToReplicas(data);
-      console.log(`balle`);
       let currentTimestamp = Date.now();
-      if (map1.has(command[4])){
-        console.log('Map3 (Key-ExpiryTime):', map3);
-       if(map3.has(command[4])){
-        console.log(`Key "${map3.get(command[4])}"`)
-        if(map3.get(command[4]) >= currentTimestamp){connection.write(serializeRESP(map1.get(command[4])));}
-        else{connection.write(serializeRESP(null));}
-       } 
-       else{connection.write(serializeRESP(map1.get(command[4])));}
-      } else {console.log("balle2");
+      if (map1.has(command[4])) {
+        if (map3.has(command[4])) {
+          if (map3.get(command[4]) >= currentTimestamp) {
+            connection.write(serializeRESP(map1.get(command[4])));
+          } else {
+            connection.write(serializeRESP(null));
+          }
+        } else {
+          connection.write(serializeRESP(map1.get(command[4])));
+        }
+      } else {
         connection.write(serializeRESP(null));
       }
     } else if (command[2] === "CONFIG" && command[4] === "GET") {
       if (addr.has(command[6])) {
-        connection.write(
-          serializeRESP([command[6], addr.get(command[6])])
-        );
+        connection.write(serializeRESP([command[6], addr.get(command[6])]));
       } else {
         connection.write(serializeRESP(null));
       }
     } else if (command[2] === "KEYS") {
       broadcastToReplicas(data);
-     // Get all keys from map1
-  const keys = Array.from(map1.keys());
-
-  // Serialize keys into RESP format
-  const respKeys = `*${keys.length}\r\n` + keys.map(key => `$${key.length}\r\n${key}\r\n`).join('');
-
-  // Send the serialized response
-  connection.write(respKeys);
-    }else if (command[2] === "INFO") {
+      // Get all keys from map1
+      const keys = Array.from(map1.keys());
+      // Serialize keys into RESP format
+      const respKeys = `*${keys.length}\r\n` + keys.map(key => `$${key.length}\r\n${key}\r\n`).join('');
+      // Send the serialized response
+      connection.write(respKeys);
+    } else if (command[2] === "INFO") {
       if (replicaidx !== -1) {
         connection.write(serializeRESP("role:slave"));
       } else {
@@ -269,26 +243,23 @@ const server = net.createServer((connection) => {
         // Send the bulk string response
         connection.write(`$${info.length}\r\n${info}\r\n`);
       }
-    } else if (command[2] === "REPLCONF" && command[4] === "listening-port" && replicaidx ===-1) {
-
+    } else if (command[2] === "REPLCONF" && command[4] === "listening-port" && replicaidx === -1) {
       connection.write("+OK\r\n");
-    } else if (command[2] === "REPLCONF" && command[4] === "capa"  && replicaidx ===-1) {
+    } else if (command[2] === "REPLCONF" && command[4] === "capa" && replicaidx === -1) {
       connection.write("+OK\r\n");
-    } else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
+    } else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1" && replicaidx === -1) {
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
       if (!replicaConnections.has(clientAddress)) {
-          replicaConnections.set(clientAddress, connection);
-          console.log(`Replica added: ${clientAddress}`);
+        replicaConnections.set(clientAddress, connection);
+        console.log(`Replica added: ${clientAddress}`);
       }
-      const base64 = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog=="
+      const base64 = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
       const rdbBuffer = Buffer.from(base64, "base64");
-      const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`)
+      const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`);
       
-   
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
-    }
-     else {
+    } else {
       connection.write(serializeRESP("ERR unknown command"));
     }
   });
