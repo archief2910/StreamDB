@@ -100,7 +100,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
               const str = command[4];
               master.write(serializeRESP(str));
             } else if (command[2] === "SET") {
-             
+             console.log("suhani teri mkc");
               map1.set(command[4], command[6]);
               if (command.length >= 8 && command[8] === "px") {
                 let interval = parseInt(command[10], 10);
