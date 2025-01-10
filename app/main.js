@@ -6,7 +6,8 @@ const { getKeysValues,h } = require("./parseRDB.js");
  const portIdx = process.argv.indexOf("--port");
  const replicaidx = process.argv.indexOf("--replicaof");
  const PORT = portIdx == -1 ? 6379 : process.argv[portIdx + 1]
-
+ const masterString = replicaidx == -1 ? "" : process.argv[replicaidx + 1]
+ const masterArray = masterString.split(" ")
  // Logs the Map with key-value pairs
 // Function to serialize data into RESP format
 const serializeRESP = (obj) => {
@@ -69,13 +70,103 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   }
 }
 
+if(replicaidx !==-1) {
 
+const master = net.createConnection({ host: masterArray[0], port: masterArray[1] }, () => {
+  console.log("Connected to the master server");
 
+  // Send PING
+  sendCommand("*1\r\n$4\r\nPING\r\n", "+PONG\r\n", () => {
+    console.log("PING acknowledged");
+
+    // Send REPLCONF listening-port
+    sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT.length}\r\n${PORT}\r\n`, "+OK\r\n", () => {
+      console.log("REPLCONF listening-port acknowledged");
+
+      // Send REPLCONF capa eof capa psync2
+      sendCommand("*5\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$3\r\neof\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n", "+OK\r\n", () => {
+        console.log("REPLCONF capa acknowledged");
+
+        // Send PSYNC ? -1
+        sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
+          console.log("PSYNC acknowledged");
+          master.end();
+        });
+      });
+    });
+  });
+});
+
+// Helper function to send a command and wait for acknowledgment
+function sendCommand(command, expectedResponse, callback) {
+  master.write(command);
+  master.once("data", (data) => {
+    const response = data.toString();
+    console.log("Received:", response.trim());
+    if (response.startsWith(expectedResponse)) {
+      callback();
+    } else {
+      console.error("Unexpected response:", response.trim());
+    }
+  });
+}
+
+// Handle errors
+master.on("error", (err) => {
+  console.error("Connection error:", err.message);
+});
+
+master.on("end", () => {
+  console.log("Disconnected from the master server");
+});
+
+} 
+else{
+// Create the master server
+const masterServer = net.createServer((socket) => {
+  console.log("Replica connected");
+
+  socket.on("data", (data) => {
+    const command = data.toString().trim().split("\r\n");
+    console.log("Received command:", command);
+
+    if (command[2] === "PING") {
+      socket.write("+PONG\r\n");
+    } else if (command[2] === "REPLCONF" && command[3] === "listening-port") {
+      socket.write("+OK\r\n");
+    } else if (command[2] === "REPLCONF" && command.slice(3).join(" ") === "capa eof capa psync2") {
+      socket.write("+OK\r\n");
+    } else if (command[2] === "PSYNC" && command[3] === "? -1") {
+      socket.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
+    } else {
+      socket.write("-ERR Unknown command\r\n");
+    }
+  });
+
+  socket.on("end", () => {
+    console.log("Replica disconnected");
+  });
+
+  socket.on("error", (err) => {
+    console.error("Socket error:", err.message);
+  });
+});
+
+masterServer.listen(PORT, () => {
+  console.log("Master server listening on port 6379");
+});
+}
 const server = net.createServer((connection) => {
   console.log("Client connected");
 
   connection.on("data", (data) => {
     const command = Buffer.from(data).toString().split("\r\n");
+
+
+
+
+
+
 
     if (command[2] === "PING") {
       connection.write(serializeRESP("PONG"));
