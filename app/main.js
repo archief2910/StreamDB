@@ -19,6 +19,25 @@ const { getKeysValues,h } = require("./parseRDB.js");
       }
   });
 }
+function parseCommandChunks(data) {
+  let currentIndex = 0; // start at the beginning of the data string
+  const commandChunks = []; // this will store each parsed command chunk
+  // loop throught the entire string to find all command chunks
+  while (currentIndex < data.length) {
+    // find the start index of the next command, indicated by '*'
+    const nextCommandStart = data.indexOf('*', currentIndex + 1);
+    // determine the end of the current chunk: either the start of the next command chunk or the end of the data
+    const currentChunkEnd = nextCommandStart === -1 ? data.length : nextCommandStart;
+    // extract the command chunk from currentIndex to the determined end
+    if (currentIndex !== currentChunkEnd) { // ensure that we do no include empty command
+      commandChunks.push(data.substring(currentIndex, currentChunkEnd));
+    }
+    // move the currentIndex to the start of the next command
+    // if no next command, break the loop by setting currentIndex to data.length
+    currentIndex = nextCommandStart === -1 ? data.length : nextCommandStart;
+  }
+  return commandChunks;
+}
  // Logs the Map with key-value pairs
 // Function to serialize data into RESP format
 const serializeRESP = (obj) => {
@@ -92,28 +111,30 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
         sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
           console.log("PSYNC acknowledged");
           master.on("data", (data) => {
+            const requests = parseCommandChunks(data.toString());
+        requests.forEach(command => {
+          if (command[2] === "SET") {
+            console.log(command[4]);
+             map1.set(command[4], command[6]);
             
-            const command = Buffer.from(data).toString().split("\r\n");
-             if (command[2] === "SET") {
-             console.log(command[4]);
-              map1.set(command[4], command[6]);
+             if (command.length >= 8 && command[8] === "px") {
+               let interval = parseInt(command[10], 10);
+               let start = Date.now();
+               function accurateTimeout() {
+                 let elapsed = Date.now() - start;
+                 if (elapsed >= interval) {
+                   map1.delete(command[4]);
+                   console.log(`Key "${command[4]}" deleted after ${interval} ms`);
+                 } else {
+                   setTimeout(accurateTimeout, interval - elapsed);
+                 }
+               }
+               setTimeout(accurateTimeout, interval);
+             }
+            
+           }
+        });
              
-              if (command.length >= 8 && command[8] === "px") {
-                let interval = parseInt(command[10], 10);
-                let start = Date.now();
-                function accurateTimeout() {
-                  let elapsed = Date.now() - start;
-                  if (elapsed >= interval) {
-                    map1.delete(command[4]);
-                    console.log(`Key "${command[4]}" deleted after ${interval} ms`);
-                  } else {
-                    setTimeout(accurateTimeout, interval - elapsed);
-                  }
-                }
-                setTimeout(accurateTimeout, interval);
-              }
-             
-            }
           });
          
         });
