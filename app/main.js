@@ -103,7 +103,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
         sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
           console.log("PSYNC acknowledged");
           listenForReplicationData();
-          master.end();
+        
         });
       });
     });
@@ -111,10 +111,8 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
 });
  // Function to listen for replication data after handshake
   function listenForReplicationData() {
-    const replicaConnection = net.createConnection({ host: masterArray[0], port: masterArray[1] }, () => {
-      console.log("Replica connected to master for replication");
-
-      replicaConnection.on("data", (data) => {
+   
+      master.on("data", (data) => {
         const command = Buffer.from(data).toString().split("\r\n");
         console.log(`Received command: ${command[2]}`);
 
@@ -145,21 +143,21 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
         } else if (command[2] === "GET") {
           // Respond with the local value from map1 if it exists
           if (map1.has(command[4])) {
-            replicaConnection.write(serializeRESP(map1.get(command[4])));
+            master.write(serializeRESP(map1.get(command[4])));
           } else {
-            replicaConnection.write(serializeRESP(null));
+            master.write(serializeRESP(null));
           }
         }
       });
 
-      replicaConnection.on("error", (err) => {
+      master.on("error", (err) => {
         console.error("Replication connection error:", err.message);
       });
 
-      replicaConnection.on("end", () => {
+      master.on("end", () => {
         console.log("Replica disconnected from master");
       });
-    });
+    
   }
 // Helper function to send a command and wait for acknowledgment
 function sendCommand(command, expectedResponse, callback) {
