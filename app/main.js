@@ -92,6 +92,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
         sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
           console.log("PSYNC acknowledged");
           master.on("data", (data) => {
+            console.log("Received data:", data.toString());
             const command = Buffer.from(data).toString().split("\r\n");
             if (command[2] === "PING") {
               master.write(serializeRESP("PONG"));
