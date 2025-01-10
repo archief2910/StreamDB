@@ -95,7 +95,7 @@ const master = net.createConnection({ host: masterArray[0], port: masterArray[1]
             
             const command = Buffer.from(data).toString().split("\r\n");
              if (command[2] === "SET") {
-             
+             console.log(command[4]);
               map1.set(command[4], command[6]);
              
               if (command.length >= 8 && command[8] === "px") {
