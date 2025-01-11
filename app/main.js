@@ -136,8 +136,9 @@ if (replicaidx !== -1) {
           default:
             const commands = parseCommandChunks(event.toString());
             commands.forEach((request) => {
+              console.log(`${request} lola`);
               let command = Buffer.from(request).toString().split("\r\n");
-         
+             
 
               if (command[2]=== 'SET') {
                
