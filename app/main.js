@@ -335,7 +335,7 @@ const server = net.createServer((connection) => {
       const successfulReplicas = broadcastToReplicasWithTimeout(data,parseInt(command[6], 10),parseInt(command[4], 10));
      
 
-      connection.write(`:${successfulReplicas}\r\n`)
+      connection.write(serializeRESP(successfulReplicas));
     }
      else {
       connection.write(serializeRESP("ERR unknown command"));
