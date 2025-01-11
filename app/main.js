@@ -157,7 +157,7 @@ if (replicaidx !== -1) {
         }
         setTimeout(accurateTimeout, interval);
       }
-      connection.write(serializeRESP(true));
+      
             } else if (cmd.toLowerCase() === 'replconf' && args[0].toLowerCase() === 'getack') {
               const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
               processedOffset += ackCommand.length;
@@ -186,21 +186,6 @@ if (replicaidx !== -1) {
   };
   
  
-  const processSETCommand = (args) => {
-    const [key, value, ...options] = args;
-    console.log(`Processing SET command for key: ${key}, value: ${value}`);
-  
-    if (options.includes('px')) {
-      const ttlIndex = options.indexOf('px') + 1;
-      const ttl = parseInt(options[ttlIndex], 10);
-      console.log(`Setting TTL for key: ${key}, TTL: ${ttl}ms`);
-  
-      setTimeout(() => {
-        console.log(`TTL expired for key: ${key}`);
-        // Delete key logic here
-      }, ttl);
-    }
-  };
   
 }
 
