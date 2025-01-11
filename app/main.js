@@ -96,98 +96,95 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   }
 }
 if (replicaidx !== -1) {
-  const host =masterArray[0];
-  const hport =masterArray[1];
+  const host = masterArray[0];
+  const hport = masterArray[1];
+  
   const performHandshake = ({ host, hport, PORT }) => {
     let handshakeState = 1;
     let processedOffset = 0;
-  
-    const client = net.createConnection({ host, hport }, () => {
+
+    const client = net.createConnection({ host, port: hport }, () => {
       console.log(`Connected to master server: ${host} on port: ${hport}`);
     });
-  
+
     client.setEncoding('utf8');
-  
+
     // Start the handshake by sending PING
     client.write(generateRespArrayMsg(['PING']));
-  
+
     client.on('data', (event) => {
-      switch (handshakeState) {
-        case 1: {
-          // PING acknowledged, move to REPLCONF listening-port
-          handshakeState = 2;
-          client.write(generateRespArrayMsg(['REPLCONF', 'listening-port', `${PORT}`]));
-          console.log("PING acknowledged");
-          break;
-        }
-        case 2: {
-          // REPLCONF listening-port acknowledged, move to REPLCONF capa
-          handshakeState = 3;
-          client.write(generateRespArrayMsg(['REPLCONF', 'capa', 'psync2']));
-          console.log("REPLCONF listening-port acknowledged");
-          break;
-        }
-        case 3: {
-          // REPLCONF capa acknowledged, move to PSYNC
-          handshakeState = 4;
-          client.write(generateRespArrayMsg(['PSYNC', '?', '-1']));
-          console.log("REPLCONF capa acknowledged");
-          break;
-        }
-        default: {
-          // Handle replication stream
-          const commands = parseCommandChunks(event);
-          commands.forEach((command) => {
-            const [cmd, ...args] = command;
-            
-            if (cmd.toLowerCase() === 'set') {
-              processedOffset += generateRespArrayMsg(command).length;
-              map1.set(command[4], command[6]);
-      if (command.length >= 8 && command[8] === "px") {
-        let interval = parseInt(command[10], 10);
-        let start = Date.now();
-        function accurateTimeout() {
-          let elapsed = Date.now() - start;
-          if (elapsed >= interval) {
-            map1.delete(command[4]);
-            console.log(`Key "${command[4]}" deleted after ${interval} ms`);
-          } else {
-            setTimeout(accurateTimeout, interval - elapsed);
+      if (typeof event !== 'string') {
+        console.error('Invalid data received:', event);
+        return;
+      }
+
+      try {
+        switch (handshakeState) {
+          case 1: {
+            handshakeState = 2;
+            client.write(generateRespArrayMsg(['REPLCONF', 'listening-port', `${PORT}`]));
+            console.log("PING acknowledged");
+            break;
+          }
+          case 2: {
+            handshakeState = 3;
+            client.write(generateRespArrayMsg(['REPLCONF', 'capa', 'psync2']));
+            console.log("REPLCONF listening-port acknowledged");
+            break;
+          }
+          case 3: {
+            handshakeState = 4;
+            client.write(generateRespArrayMsg(['PSYNC', '?', '-1']));
+            console.log("REPLCONF capa acknowledged");
+            break;
+          }
+          default: {
+            const commands = parseCommandChunks(event);
+            commands.forEach((command) => {
+              const [cmd, ...args] = command;
+
+              if (cmd.toLowerCase() === 'set') {
+                processedOffset += generateRespArrayMsg(command).length;
+                map1.set(command[4], command[6]);
+
+                if (command.length >= 8 && command[8] === 'px') {
+                  const interval = parseInt(command[10], 10);
+                  setTimeout(() => {
+                    map1.delete(command[4]);
+                    console.log(`Key "${command[4]}" deleted after ${interval} ms`);
+                  }, interval);
+                }
+              } else if (cmd.toLowerCase() === 'replconf' && args[0].toLowerCase() === 'getack') {
+                const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
+                processedOffset += ackCommand.length;
+                client.write(ackCommand);
+              } else {
+                processedOffset += generateRespArrayMsg(command).length;
+              }
+            });
+            break;
           }
         }
-        setTimeout(accurateTimeout, interval);
-      }
-      
-            } else if (cmd.toLowerCase() === 'replconf' && args[0].toLowerCase() === 'getack') {
-              const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
-              processedOffset += ackCommand.length;
-              client.write(ackCommand);
-            } else {
-              processedOffset += generateRespArrayMsg(command).length;
-            }
-          });
-          break;
-        }
+      } catch (error) {
+        console.error('Error processing data:', error.message);
       }
     });
-  
+
     client.on('error', (err) => {
       console.error('Client connection error:', err.message);
     });
-  
+
     client.on('close', () => {
       console.log('Connection to master server closed.');
     });
   };
-  
-  // Helper functions
+
   const generateRespArrayMsg = (args) => {
+    if (!Array.isArray(args)) throw new Error('Invalid arguments for RESP array');
     return `*${args.length}\r\n${args.map((arg) => `$${arg.length}\r\n${arg}\r\n`).join('')}`;
   };
-  
- 
-  
 }
+
 
 const server = net.createServer((connection) => {
   console.log("Client connected");
