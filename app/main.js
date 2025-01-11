@@ -19,6 +19,46 @@ const { getKeysValues,h } = require("./parseRDB.js");
       }
   });
 }
+function broadcastToReplicasWithTimeout(message, timeout) {
+  const replicaStatus = new Map();
+
+  replicaConnections.forEach((conn, address) => {
+      // Initialize each replica as not yet contacted
+      replicaStatus.set(address, false);
+
+      try {
+          // Set a timeout for sending the message
+          const timer = setTimeout(() => {
+              try {
+                  conn.write(message);
+                  console.log(`Message sent to replica: ${address}`);
+                  replicaStatus.set(address, true); // Mark as successful
+              } catch (error) {
+                  console.error(`Failed to send message to ${address}:`, error);
+              }
+          }, timeout);
+
+          // Handle connection errors
+          conn.on('error', (error) => {
+              clearTimeout(timer);
+              console.error(`Connection error for ${address}:`, error);
+          });
+      } catch (error) {
+          console.error(`Failed to schedule message to ${address}:`, error);
+      }
+  });
+
+  // Use a synchronous block to wait for timeout to complete
+  const start = Date.now();
+  while (Date.now() - start < timeout + 50) {
+      // Busy wait to simulate synchronous timeout
+  }
+
+  // Count and return successful replicas
+  const successfulReplicas = Array.from(replicaStatus.values()).filter(status => status).length;
+  return successfulReplicas;
+}
+
 function parseCommandChunks(data) {
   let currentIndex = 0; // start at the beginning of the data string
   const commandChunks = []; // this will store each parsed command chunk
@@ -284,8 +324,10 @@ const server = net.createServer((connection) => {
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     } else if(command[2]=="WAIT"){
-      let mapsize = replicaConnections.size;
-      connection.write(`:${mapsize}\r\n`);
+      const successfulReplicas = broadcastToReplicasWithTimeout(serializeRESP(command),parseInt(command[6], 10));
+      let min = Math.min(parseInt(command[4], 10),successfulReplicas );
+
+      connection.write(`:${min}\r\n`)
     }
      else {
       connection.write(serializeRESP("ERR unknown command"));
