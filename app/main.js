@@ -192,7 +192,7 @@ if (replicaidx !== -1) {
   // Helper function to send a command and wait for acknowledgment
   function sendCommand(command, expectedResponse, callback) {
     master.write(command);
-    master.once("data", (data) => {
+    master.on("data", (data) => {
       const response = data.toString();
       console.log("Received:", response.trim());
       if (response.startsWith(expectedResponse)) {
