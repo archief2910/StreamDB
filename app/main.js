@@ -100,7 +100,7 @@ if (replicaidx !== -1) {
   const performHandshake = ({ host, hport, PORT }) => {
     let handshakeState = 1;
     let processedOffset = 0;
-       
+       console.log("suhani randi");
     const client = net.createConnection({ host:masterArray[0],  port:masterArray[1] }, () => {
       console.log(`Connected to master server: ${host} on port: ${hport}`);
     });
