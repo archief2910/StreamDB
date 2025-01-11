@@ -150,16 +150,14 @@ if (replicaidx !== -1) {
                     console.log(`Key "${command[4]}" deleted after ${interval} ms`);
                   }, interval);
                 }
+                processedOffset += request.length;
               } else if (command[2]=== 'REPLCONF' && command[4] === 'GETACK') {
                 const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
-               
                 client.write(ackCommand);
-                
-              } 
                 processedOffset += request.length;
-              
+              }else{processedOffset += request.length;}
+               
             });
-           
         }
       } catch (error) {
         console.error('Error processing data:', error.message);
