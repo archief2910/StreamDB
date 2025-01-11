@@ -134,6 +134,7 @@ if (replicaidx !== -1) {
             console.log("REPLCONF capa acknowledged");
             break;
           default:
+
             const commands = parseCommandChunks(event.toString());
             commands.forEach((request) => {
               console.log(`${request} lola`);
@@ -152,11 +153,12 @@ if (replicaidx !== -1) {
                   }, interval);
                 }
                 processedOffset += request.length;
-              } else if (command[2]=== 'REPLCONF' && command[4] === 'GETACK') {
+              } else if(command[2] === 'PING'){processedOffset += request.length;}
+               else if (command[2]=== 'REPLCONF' && command[4] === 'GETACK') {
                 const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
                 client.write(ackCommand);
                 processedOffset += request.length;
-              }else{processedOffset += request.length;}
+              }
                
             });
         }
