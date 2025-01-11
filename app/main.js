@@ -97,7 +97,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
 }
 if (replicaidx !== -1) {
  
-  const performHandshake = ({ host, port, PORT }) => {
+  const performHandshake = ({host:masterArray[0],  port:masterArray[1] },() => {
     let handshakeState = 1;
     let processedOffset = 0;
       
@@ -175,7 +175,7 @@ if (replicaidx !== -1) {
     client.on('close', () => {
       console.log('Connection to master server closed.');
     });
-  };
+  });
 
   const generateRespArrayMsg = (args) => {
     if (!Array.isArray(args)) throw new Error('Invalid arguments for RESP array');
