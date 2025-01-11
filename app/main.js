@@ -97,12 +97,12 @@ if (addr.get("dir") && addr.get("dbfilename")) {
 }
 if (replicaidx !== -1) {
  
-  const performHandshake = ({ host, hport, PORT }) => {
+  const performHandshake = ({ host, port, PORT }) => {
     let handshakeState = 1;
     let processedOffset = 0;
-       console.log("suhani randi");
+      
     const client = net.createConnection({ host:masterArray[0],  port:masterArray[1] }, () => {
-      console.log(`Connected to master server: ${host} on port: ${hport}`);
+      console.log(`Connected to master server: ${host} on port: ${port}`);
     });
 
     client.setEncoding('utf8');
