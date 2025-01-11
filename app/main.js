@@ -134,12 +134,13 @@ if (replicaidx !== -1) {
             console.log("REPLCONF capa acknowledged");
             break;
           default:
-            const commands = parseCommandChunks(event);
-            commands.forEach((command) => {
-              const [cmd, ...args] = command;
+            const commands = parseCommandChunks(event.toString());
+            commands.forEach((request) => {
+              let command = Buffer.from(request).toString().split("\r\n");
+         
 
-              if (cmd.toLowerCase() === 'set') {
-                processedOffset += generateRespArrayMsg(command).length;
+              if (command[2]=== 'SET') {
+               
                 map1.set(command[4], command[6]);
 
                 if (command.length >= 8 && command[8] === 'px') {
@@ -149,13 +150,14 @@ if (replicaidx !== -1) {
                     console.log(`Key "${command[4]}" deleted after ${interval} ms`);
                   }, interval);
                 }
-              } else if (cmd.toLowerCase() === 'replconf' && args[0].toLowerCase() === 'getack') {
+              } else if (command[2]=== 'REPLCONF' && command[4] === 'GETACK') {
                 const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
-                processedOffset += ackCommand.length;
+               
                 client.write(ackCommand);
-              } else {
-                processedOffset += generateRespArrayMsg(command).length;
-              }
+                
+              } 
+                processedOffset += request.length;
+              
             });
            
         }
