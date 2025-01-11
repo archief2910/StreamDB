@@ -266,7 +266,7 @@ const server = net.createServer((connection) => {
         }
         setTimeout(accurateTimeout, interval);
       }
-      broadcastToReplicas(serializeRESP("REPLCONF")+serializeRESP("GETACK")+serializeRESP("*"));
+      broadcastToReplicas(serializeRESP(["REPLCONF","GETACK","*"]));
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
       broadcastToReplicas(data);
