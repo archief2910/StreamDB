@@ -157,7 +157,7 @@ if (replicaidx !== -1) {
                 processedOffset += generateRespArrayMsg(command).length;
               }
             });
-            break;
+           
         }
       } catch (error) {
         console.error('Error processing data:', error.message);
