@@ -96,114 +96,111 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   }
 }
 if (replicaidx !== -1) {
-  const master = net.createConnection(
-    { host: masterArray[0], port: masterArray[1] },
-    () => {
-      console.log("Connected to the master server");
-
-      // Start the handshake
-      sendCommand("*1\r\n$4\r\nPING\r\n", "+PONG\r\n", () => {
-        console.log("PING acknowledged");
-
-        sendCommand(
-          `*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT.length}\r\n${PORT}\r\n`,
-          "+OK\r\n",
-          () => {
-            console.log("REPLCONF listening-port acknowledged");
-
-            sendCommand(
-              `*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n`,
-              "+OK\r\n",
-              () => {
-                console.log("REPLCONF capa acknowledged");
-
-                sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
-                  console.log("PSYNC acknowledged");
-
-                  let offset = 0;
-                  let myArray = [];
-
-                  // Data event for receiving replication stream
-                  master.on("data", (data) => {
-                    const requests = parseCommandChunks(data.toString());
-                    console.log("Parsed Requests:", requests);
-
-                    requests.forEach((request) => {
-                      const command = Buffer.from(request).toString().split("\r\n");
-
-                      if (command[2] === "SET") {
-                        console.log("Received SET:", command[4]);
-                        map1.set(command[4], command[6]);
-
-                        // Handle PX TTL
-                        if (command.length >= 8 && command[8] === "px") {
-                          const interval = parseInt(command[10], 10);
-                          const start = Date.now();
-
-                          function accurateTimeout() {
-                            const elapsed = Date.now() - start;
-                            if (elapsed >= interval) {
-                              map1.delete(command[4]);
-                              console.log(`Key "${command[4]}" deleted after ${interval} ms`);
-                            } else {
-                              setTimeout(accurateTimeout, interval - elapsed);
-                            }
-                          }
-
-                          setTimeout(accurateTimeout, interval);
-                        }
-                      } else if (command[2] === "REPLCONF" && command[4] === "GETACK") {
-                        const ackCommand = `*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$${String(offset).length}\r\n${offset}\r\n`;
-                        master.write(ackCommand);
-                      }
-
-                      offset += request.length; // Update offset
-                    });
-
-                    
-                  });
-
-                  master.on("error", (err) => {
-                    console.error("Master connection error:", err.message);
-                  });
-                });
-              }
-            );
+  const host =masterArray[0];
+  const hport =masterArray[1];
+  const performHandshake = ({ host, hport, PORT }) => {
+    let handshakeState = 1;
+    let processedOffset = 0;
+  
+    const client = net.createConnection({ host, hport }, () => {
+      console.log(`Connected to master server: ${host} on port: ${hport}`);
+    });
+  
+    client.setEncoding('utf8');
+  
+    // Start the handshake by sending PING
+    client.write(generateRespArrayMsg(['PING']));
+  
+    client.on('data', (event) => {
+      switch (handshakeState) {
+        case 1: {
+          // PING acknowledged, move to REPLCONF listening-port
+          handshakeState = 2;
+          client.write(generateRespArrayMsg(['REPLCONF', 'listening-port', `${PORT}`]));
+          console.log("PING acknowledged");
+          break;
+        }
+        case 2: {
+          // REPLCONF listening-port acknowledged, move to REPLCONF capa
+          handshakeState = 3;
+          client.write(generateRespArrayMsg(['REPLCONF', 'capa', 'psync2']));
+          console.log("REPLCONF listening-port acknowledged");
+          break;
+        }
+        case 3: {
+          // REPLCONF capa acknowledged, move to PSYNC
+          handshakeState = 4;
+          client.write(generateRespArrayMsg(['PSYNC', '?', '-1']));
+          console.log("REPLCONF capa acknowledged");
+          break;
+        }
+        default: {
+          // Handle replication stream
+          const commands = parseCommandChunks(event);
+          commands.forEach((command) => {
+            const [cmd, ...args] = command;
+            
+            if (cmd.toLowerCase() === 'set') {
+              processedOffset += generateRespArrayMsg(command).length;
+              map1.set(command[4], command[6]);
+      if (command.length >= 8 && command[8] === "px") {
+        let interval = parseInt(command[10], 10);
+        let start = Date.now();
+        function accurateTimeout() {
+          let elapsed = Date.now() - start;
+          if (elapsed >= interval) {
+            map1.delete(command[4]);
+            console.log(`Key "${command[4]}" deleted after ${interval} ms`);
+          } else {
+            setTimeout(accurateTimeout, interval - elapsed);
           }
-        );
-      });
-    }
-  );
-
-  // Helper function to send a command and wait for acknowledgment
-  function sendCommand(command, expectedResponse, callback) {
-    master.write(command);
-    if(command === "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"){
-      master.on("data", (data) => {
-        const response = data.toString();
-        console.log("Received:", response.trim());
-        if (response.startsWith(expectedResponse)) {
-          callback();
-        } else {
-          console.error("Unexpected response:", response.trim());
         }
-      });
-    }
-    else{
-      master.once("data", (data) => {
-        const response = data.toString();
-        console.log("Received:", response.trim());
-        if (response.startsWith(expectedResponse)) {
-          callback();
-        } else {
-          console.error("Unexpected response:", response.trim());
+        setTimeout(accurateTimeout, interval);
+      }
+      connection.write(serializeRESP(true));
+            } else if (cmd.toLowerCase() === 'replconf' && args[0].toLowerCase() === 'getack') {
+              const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
+              processedOffset += ackCommand.length;
+              client.write(ackCommand);
+            } else {
+              processedOffset += generateRespArrayMsg(command).length;
+            }
+          });
+          break;
         }
-      });
+      }
+    });
+  
+    client.on('error', (err) => {
+      console.error('Client connection error:', err.message);
+    });
+  
+    client.on('close', () => {
+      console.log('Connection to master server closed.');
+    });
+  };
+  
+  // Helper functions
+  const generateRespArrayMsg = (args) => {
+    return `*${args.length}\r\n${args.map((arg) => `$${arg.length}\r\n${arg}\r\n`).join('')}`;
+  };
+  
+ 
+  const processSETCommand = (args) => {
+    const [key, value, ...options] = args;
+    console.log(`Processing SET command for key: ${key}, value: ${value}`);
+  
+    if (options.includes('px')) {
+      const ttlIndex = options.indexOf('px') + 1;
+      const ttl = parseInt(options[ttlIndex], 10);
+      console.log(`Setting TTL for key: ${key}, TTL: ${ttl}ms`);
+  
+      setTimeout(() => {
+        console.log(`TTL expired for key: ${key}`);
+        // Delete key logic here
+      }, ttl);
     }
-   
-  }
-
-  // Helper function to parse RESP command chunks
+  };
   
 }
 
