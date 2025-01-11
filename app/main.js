@@ -140,9 +140,7 @@ if (replicaidx !== -1) {
               let command = Buffer.from(request).toString().split("\r\n");
           
               // Calculate the RESP-encoded length of the command
-              const calculateRespLength = (resp) => {
-                return Buffer.byteLength(resp, 'utf8');
-              };
+              const calculateRespLength = (resp) => Buffer.byteLength(resp, 'utf8');
           
               if (command[2] === 'SET') {
                 map1.set(command[4], command[6]);
@@ -156,17 +154,17 @@ if (replicaidx !== -1) {
                   }, interval);
                 }
           
-                // Add the length of the RESP-encoded `SET` command
+                // Add the RESP length of the SET command
                 processedOffset += calculateRespLength(request);
               } else if (command[2] === 'PING') {
-                // Add the length of the RESP-encoded `PING` command
+                // Add the RESP length of the PING command
                 processedOffset += calculateRespLength(request);
               } else if (command[2] === 'REPLCONF' && command[4] === 'GETACK') {
                 // Generate the acknowledgment response
                 const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
                 client.write(ackCommand);
           
-                // Add the length of the RESP-encoded `REPLCONF GETACK` command
+                // Add the RESP length of the REPLCONF GETACK command
                 processedOffset += calculateRespLength(request);
               }
             });
