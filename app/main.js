@@ -21,24 +21,32 @@ const { getKeysValues,h } = require("./parseRDB.js");
 }
 function broadcastToReplicasWithTimeout(message, timeout, y) {
   const replicaStatus = new Map();
+  let successfulReplicas = 0;
+
+  const checkAndReturn = () => {
+      if (successfulReplicas === y) {
+          clearTimeout(globalTimeout);
+          return successfulReplicas;
+      }
+  };
 
   replicaConnections.forEach((conn, address) => {
-      // Initialize each replica as not yet contacted
       replicaStatus.set(address, false);
 
       try {
-          // Set a timeout for sending the message
+          // Set timeout for each connection
           const timer = setTimeout(() => {
               try {
                   conn.write(message);
                   console.log(`Message sent to replica: ${address}`);
-                  replicaStatus.set(address, true); // Mark as successful
+                  replicaStatus.set(address, true);
+                  successfulReplicas++;
+                  checkAndReturn(); // Check after every successful replica
               } catch (error) {
                   console.error(`Failed to send message to ${address}:`, error);
               }
           }, timeout);
 
-          // Handle connection errors
           conn.on('error', (error) => {
               clearTimeout(timer);
               console.error(`Connection error for ${address}:`, error);
@@ -48,21 +56,13 @@ function broadcastToReplicasWithTimeout(message, timeout, y) {
       }
   });
 
-  // Use a synchronous block to wait for timeout to complete
-  const start = Date.now();
-  while (Date.now() - start < timeout + 50) {
-      // Busy wait to simulate synchronous timeout
-  }
+  // Final fallback after timeout
+  const globalTimeout = setTimeout(() => {
+      console.log('Timeout reached. Returning successful replicas.');
+  }, timeout);
 
-  // Count successful replicas
-  const successfulReplicas = Array.from(replicaStatus.values()).filter(status => status).length;
-
-  // Return either the given y or the actual successful replicas count
-  if (successfulReplicas === y) {
-      return successfulReplicas;
-  } else {
-      return successfulReplicas;
-  }
+  // Return the count synchronously (after handling)
+  return successfulReplicas;
 }
 
 function parseCommandChunks(data) {
@@ -332,9 +332,10 @@ const server = net.createServer((connection) => {
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     } else if(command[2]=="WAIT"){
       console.log(`ankit jaldi kar ${data} `);
-      const successfulReplicas = broadcastToReplicasWithTimeout(data,parseInt(command[6], 10),parseInt(command[4], 10));
-     
-
+      const timeout = parseInt(command[6], 10); // Timeout in milliseconds
+const y = parseInt(command[4], 10); // Number of replicas to check
+const successfulReplicas = broadcastToReplicasWithTimeout(data, timeout, y);
+console.log(`The number of successful replicas is: ${successfulReplicas}`);
       connection.write(serializeRESP(successfulReplicas));
     }
      else {
