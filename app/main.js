@@ -331,7 +331,7 @@ const server = net.createServer((connection) => {
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     } else if(command[2]=="WAIT"){
       console.log(`ankit jaldi kar ${data} `);
-      const successfulReplicas = broadcastToReplicasWithTimeout(serializeRESP(command),parseInt(command[6], 10),parseInt(command[4], 10));
+      const successfulReplicas = broadcastToReplicasWithTimeout(data,parseInt(command[6], 10),parseInt(command[4], 10));
      
 
       connection.write(`:${successfulReplicas}\r\n`)
