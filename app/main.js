@@ -127,7 +127,7 @@ if (replicaidx !== -1) {
                 master.on("data", (data) => {
                   buffer += data.toString(); // Append incoming data to buffer
                   let requests = parseCommandChunks(buffer);
-
+                console.log("suhani teri mkc");
                   requests.forEach((request) => {
                     let command = Buffer.from(request).toString().split("\r\n");
                     
