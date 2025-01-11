@@ -96,14 +96,12 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   }
 }
 if (replicaidx !== -1) {
-  const host = masterArray[0];
-  const hport = masterArray[1];
-  
+ 
   const performHandshake = ({ host, hport, PORT }) => {
     let handshakeState = 1;
     let processedOffset = 0;
-
-    const client = net.createConnection({ host, port: hport }, () => {
+       
+    const client = net.createConnection({ host:masterArray[0],  port:masterArray[1] }, () => {
       console.log(`Connected to master server: ${host} on port: ${hport}`);
     });
 
