@@ -134,17 +134,20 @@ if (replicaidx !== -1) {
             console.log("REPLCONF capa acknowledged");
             break;
           default:
-
             const commands = parseCommandChunks(event.toString());
             commands.forEach((request) => {
               console.log(`${request} lola`);
+              let command = Buffer.from(request).toString().split("\r\n");
+          
+              // Calculate the RESP-encoded length of the command
               const calculateRespLength = (resp) => {
                 return Buffer.byteLength(resp, 'utf8');
               };
-              let command = Buffer.from(request).toString().split("\r\n");
-              if (command[2]=== 'SET') {
+          
+              if (command[2] === 'SET') {
                 map1.set(command[4], command[6]);
-
+          
+                // Handle expiration (if specified)
                 if (command.length >= 8 && command[8] === 'px') {
                   const interval = parseInt(command[10], 10);
                   setTimeout(() => {
@@ -152,11 +155,18 @@ if (replicaidx !== -1) {
                     console.log(`Key "${command[4]}" deleted after ${interval} ms`);
                   }, interval);
                 }
+          
+                // Add the length of the RESP-encoded `SET` command
                 processedOffset += calculateRespLength(request);
-              } else if(command[2] === 'PING'){processedOffset += calculateRespLength(request);}
-               else if (command[2]=== 'REPLCONF' && command[4] === 'GETACK') {
+              } else if (command[2] === 'PING') {
+                // Add the length of the RESP-encoded `PING` command
+                processedOffset += calculateRespLength(request);
+              } else if (command[2] === 'REPLCONF' && command[4] === 'GETACK') {
+                // Generate the acknowledgment response
                 const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
                 client.write(ackCommand);
+          
+                // Add the length of the RESP-encoded `REPLCONF GETACK` command
                 processedOffset += calculateRespLength(request);
               }
             });
