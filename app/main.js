@@ -330,7 +330,7 @@ const server = net.createServer((connection) => {
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     } else if(command[2]=="WAIT"){
-      console.log(`ankit jaldi kar ${serializeRESP(command)} `);
+      console.log(`ankit jaldi kar ${data} `);
       const successfulReplicas = broadcastToReplicasWithTimeout(serializeRESP(command),parseInt(command[6], 10),parseInt(command[4], 10));
      
 
