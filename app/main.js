@@ -162,7 +162,7 @@ if (replicaidx !== -1) {
               } else if (command[2] === 'REPLCONF' && command[4] === 'GETACK') {
                 // Generate the acknowledgment response
                 const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
-                processedOffset += 2;
+                processedOffset += 3;
                 client.write(ackCommand);
           
                 // Add the RESP length of the REPLCONF GETACK command
