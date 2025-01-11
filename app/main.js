@@ -250,7 +250,7 @@ const server = net.createServer((connection) => {
       const str = command[4];
       connection.write(serializeRESP(str));
     } else if (command[2] === "SET") {
-      broadcastToReplicas(data);
+      broadcastToReplicas(data+serializeRESP(["REPLCONF","GETACK","*"]));
       map1.set(command[4], command[6]);
       if (command.length >= 8 && command[8] === "px") {
         let interval = parseInt(command[10], 10);
@@ -266,7 +266,7 @@ const server = net.createServer((connection) => {
         }
         setTimeout(accurateTimeout, interval);
       }
-      broadcastToReplicas(serializeRESP(["REPLCONF","GETACK","*"]));
+      
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
       broadcastToReplicas(data);
