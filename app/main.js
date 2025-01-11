@@ -138,11 +138,11 @@ if (replicaidx !== -1) {
             const commands = parseCommandChunks(event.toString());
             commands.forEach((request) => {
               console.log(`${request} lola`);
+              const calculateRespLength = (resp) => {
+                return Buffer.byteLength(resp, 'utf8');
+              };
               let command = Buffer.from(request).toString().split("\r\n");
-             
-
               if (command[2]=== 'SET') {
-               
                 map1.set(command[4], command[6]);
 
                 if (command.length >= 8 && command[8] === 'px') {
@@ -152,14 +152,13 @@ if (replicaidx !== -1) {
                     console.log(`Key "${command[4]}" deleted after ${interval} ms`);
                   }, interval);
                 }
-                processedOffset += request.length;
-              } else if(command[2] === 'PING'){processedOffset += request.length;}
+                processedOffset += calculateRespLength(request);
+              } else if(command[2] === 'PING'){processedOffset += calculateRespLength(request);}
                else if (command[2]=== 'REPLCONF' && command[4] === 'GETACK') {
                 const ackCommand = generateRespArrayMsg(['REPLCONF', 'ACK', `${processedOffset}`]);
                 client.write(ackCommand);
-                processedOffset += request.length;
+                processedOffset += calculateRespLength(request);
               }
-               
             });
         }
       } catch (error) {
