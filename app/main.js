@@ -95,86 +95,77 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
 }
-if (replicaidx !== -1) {
+if(replicaidx !==-1) {
   const master = net.createConnection({ host: masterArray[0], port: masterArray[1] }, () => {
     console.log("Connected to the master server");
-
-    let buffer = ""; // Buffer to store incomplete RESP chunks
-    let offset = 0;  // Tracks processed byte offset
-
     // Send PING
     sendCommand("*1\r\n$4\r\nPING\r\n", "+PONG\r\n", () => {
       console.log("PING acknowledged");
-
-      // REPLCONF listening-port
-      sendCommand(
-        `*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT.length}\r\n${PORT}\r\n`,
-        "+OK\r\n",
-        () => {
-          console.log("REPLCONF listening-port acknowledged");
-
-          // REPLCONF capa
-          sendCommand(
-            `*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n`,
-            "+OK\r\n",
-            () => {
-              console.log("REPLCONF capa acknowledged");
-
-              // PSYNC
-              sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
-                console.log("PSYNC acknowledged");
-
-                master.on("data", (data) => {
-                  buffer += data.toString(); // Append incoming data to buffer
-                  let requests = parseCommandChunks(buffer);
-                console.log("suhani teri mkc");
-                  requests.forEach((request) => {
-                    let command = Buffer.from(request).toString().split("\r\n");
-                    
-                    // Process SET commands
-                    if (command[2] === "SET") {
-                      console.log(command[4]);
-                      map1.set(command[4], command[6]);
-
-                      // Handle expiration (px)
-                      if (command.length >= 8 && command[8] === "px") {
-                        let interval = parseInt(command[10], 10);
-                        let start = Date.now();
-                        function accurateTimeout() {
-                          let elapsed = Date.now() - start;
-                          if (elapsed >= interval) {
-                            map1.delete(command[4]);
-                            console.log(`Key "${command[4]}" deleted after ${interval} ms`);
-                          } else {
-                            setTimeout(accurateTimeout, interval - elapsed);
-                          }
-                        }
-                        setTimeout(accurateTimeout, interval);
-                      }
-                    }
-
-                    // Handle REPLCONF GETACK
-                    else if (command[2] === "REPLCONF" && command[4] === "GETACK") {
-                      const ackCommand = `*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$${String(offset).length}\r\n${offset}\r\n`;
-                      master.write(ackCommand);
-                      console.log(`Sent ACK with offset: ${offset}`);
-                    }
-
-                    // Update offset
-                    offset += request.length;
-                  });
-
-                  // Update buffer to remove processed data
-                  buffer = buffer.slice(requests.reduce((sum, req) => sum + req.length, 0));
-                });
-              });
-            }
-          );
-        }
-      );
+      // Send REPLCONF listening-port
+      sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$${PORT.length}\r\n${PORT}\r\n`, "+OK\r\n", () => {
+        console.log("REPLCONF listening-port acknowledged");
+        // Send REPLCONF capa eof capa psync2
+        sendCommand(`*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n`, "+OK\r\n", () => {
+          console.log("REPLCONF capa acknowledged");
+          // Send PSYNC ? -1
+          sendCommand("*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n", "+FULLRESYNC", () => {
+            console.log("PSYNC acknowledged");
+            let offset=0;
+            master.on("data", (data) => {
+              const requests = parseCommandChunks(data.toString());
+              console.log(requests);
+              let myArray = [];
+          requests.forEach(request => {
+             
+            let command = Buffer.from(request).toString().split("\r\n");
+            if (command[2] === "SET") {
+              console.log(command[4]);
+               map1.set(command[4], command[6]);
+              
+               if (command.length >= 8 && command[8] === "px") {
+                 let interval = parseInt(command[10], 10);
+                 let start = Date.now();
+                 function accurateTimeout() {
+                   let elapsed = Date.now() - start;
+                   if (elapsed >= interval) {
+                     map1.delete(command[4]);
+                     console.log(`Key "${command[4]}" deleted after ${interval} ms`);
+                   } else {
+                     setTimeout(accurateTimeout, interval - elapsed);
+                   }
+                 }
+                 setTimeout(accurateTimeout, interval);
+               }
+              
+             }else if(command[2] === "REPLCONF" && command[4] === "GETACK"){
+              let ackCommand = `*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$${String(offset).length}\r\n${offset}\r\n`;
+              myArray.push(ackCommand);
+             }
+             offset += request.length;
+          });
+          let index = 0; 
+          while(index<myArray.length) {
+            const commandArray = myArray[index];
+          
+          
+            // Send the command to the master
+            master.write(commandArray, (err) => {
+              if (err) {
+                console.error(`Failed to send command: ${commandArray.join(" ")}. Error:`, err);
+              } else {
+                console.log(`Command sent: ${commandArray.join(" ")}`);
+              }
+            });
+          
+            index++; // Increment the index
+          }
+            });
+           
+          });
+        });
+      });
     });
   });
-
   // Helper function to send a command and wait for acknowledgment
   function sendCommand(command, expectedResponse, callback) {
     master.write(command);
@@ -188,15 +179,11 @@ if (replicaidx !== -1) {
       }
     });
   }
-
-  // Helper function to parse RESP chunks
-
-
   // Handle errors
   master.on("error", (err) => {
     console.error("Connection error:", err.message);
   });
-}
+  }
 
 const server = net.createServer((connection) => {
   console.log("Client connected");
