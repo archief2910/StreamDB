@@ -154,27 +154,13 @@ if (replicaidx !== -1) {
                         }
                       } else if (command[2] === "REPLCONF" && command[4] === "GETACK") {
                         const ackCommand = `*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$${String(offset).length}\r\n${offset}\r\n`;
-                        myArray.push(ackCommand);
+                        master.write(ackCommand);
                       }
 
                       offset += request.length; // Update offset
                     });
 
-                    // Send commands in myArray using while loop
-                    let index = 0;
-                    while (index < myArray.length) {
-                      const ackCommand = myArray[index];
-
-                      master.write(ackCommand, (err) => {
-                        if (err) {
-                          console.error(`Failed to send command: ${ackCommand}. Error:`, err);
-                        } else {
-                          console.log(`Command sent: ${ackCommand}`);
-                        }
-                      });
-
-                      index++;
-                    }
+                    
                   });
 
                   master.on("error", (err) => {
