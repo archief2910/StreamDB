@@ -192,15 +192,29 @@ if (replicaidx !== -1) {
   // Helper function to send a command and wait for acknowledgment
   function sendCommand(command, expectedResponse, callback) {
     master.write(command);
-    master.on("data", (data) => {
-      const response = data.toString();
-      console.log("Received:", response.trim());
-      if (response.startsWith(expectedResponse)) {
-        callback();
-      } else {
-        console.error("Unexpected response:", response.trim());
-      }
-    });
+    if(command === "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n"){
+      master.on("data", (data) => {
+        const response = data.toString();
+        console.log("Received:", response.trim());
+        if (response.startsWith(expectedResponse)) {
+          callback();
+        } else {
+          console.error("Unexpected response:", response.trim());
+        }
+      });
+    }
+    else{
+      master.once("data", (data) => {
+        const response = data.toString();
+        console.log("Received:", response.trim());
+        if (response.startsWith(expectedResponse)) {
+          callback();
+        } else {
+          console.error("Unexpected response:", response.trim());
+        }
+      });
+    }
+   
   }
 
   // Helper function to parse RESP command chunks
