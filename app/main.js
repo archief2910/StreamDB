@@ -96,12 +96,12 @@ if (addr.get("dir") && addr.get("dbfilename")) {
   }
 }
 if (replicaidx !== -1) {
- 
-  const performHandshake = ({host:masterArray[0],  port:masterArray[1] },() => {
+  const performHandshake = () => {
+    const [host, port] = masterArray; // Extract host and port
     let handshakeState = 1;
     let processedOffset = 0;
-      
-    const client = net.createConnection({ host:masterArray[0],  port:masterArray[1] }, () => {
+
+    const client = net.createConnection({ host, port }, () => {
       console.log(`Connected to master server: ${host} on port: ${port}`);
     });
 
@@ -118,25 +118,22 @@ if (replicaidx !== -1) {
 
       try {
         switch (handshakeState) {
-          case 1: {
+          case 1:
             handshakeState = 2;
             client.write(generateRespArrayMsg(['REPLCONF', 'listening-port', `${PORT}`]));
             console.log("PING acknowledged");
             break;
-          }
-          case 2: {
+          case 2:
             handshakeState = 3;
             client.write(generateRespArrayMsg(['REPLCONF', 'capa', 'psync2']));
             console.log("REPLCONF listening-port acknowledged");
             break;
-          }
-          case 3: {
+          case 3:
             handshakeState = 4;
             client.write(generateRespArrayMsg(['PSYNC', '?', '-1']));
             console.log("REPLCONF capa acknowledged");
             break;
-          }
-          default: {
+          default:
             const commands = parseCommandChunks(event);
             commands.forEach((command) => {
               const [cmd, ...args] = command;
@@ -161,7 +158,6 @@ if (replicaidx !== -1) {
               }
             });
             break;
-          }
         }
       } catch (error) {
         console.error('Error processing data:', error.message);
@@ -175,12 +171,14 @@ if (replicaidx !== -1) {
     client.on('close', () => {
       console.log('Connection to master server closed.');
     });
-  });
+  };
 
   const generateRespArrayMsg = (args) => {
     if (!Array.isArray(args)) throw new Error('Invalid arguments for RESP array');
     return `*${args.length}\r\n${args.map((arg) => `$${arg.length}\r\n${arg}\r\n`).join('')}`;
   };
+
+  performHandshake(); // Trigger handshake
 }
 
 
