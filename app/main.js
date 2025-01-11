@@ -19,7 +19,7 @@ const { getKeysValues,h } = require("./parseRDB.js");
       }
   });
 }
-function broadcastToReplicasWithTimeout(message, timeout) {
+function broadcastToReplicasWithTimeout(message, timeout, y) {
   const replicaStatus = new Map();
 
   replicaConnections.forEach((conn, address) => {
@@ -54,9 +54,15 @@ function broadcastToReplicasWithTimeout(message, timeout) {
       // Busy wait to simulate synchronous timeout
   }
 
-  // Count and return successful replicas
+  // Count successful replicas
   const successfulReplicas = Array.from(replicaStatus.values()).filter(status => status).length;
-  return successfulReplicas;
+
+  // Return either the given y or the actual successful replicas count
+  if (successfulReplicas === y) {
+      return successfulReplicas;
+  } else {
+      return successfulReplicas;
+  }
 }
 
 function parseCommandChunks(data) {
@@ -324,10 +330,10 @@ const server = net.createServer((connection) => {
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     } else if(command[2]=="WAIT"){
-      const successfulReplicas = broadcastToReplicasWithTimeout(serializeRESP(command),parseInt(command[6], 10));
-      let min = Math.min(parseInt(command[4], 10),successfulReplicas );
+      const successfulReplicas = broadcastToReplicasWithTimeout(serializeRESP(command),parseInt(command[6], 10),parseInt(command[4], 10));
+     
 
-      connection.write(`:${min}\r\n`)
+      connection.write(`:${successfulReplicas}\r\n`)
     }
      else {
       connection.write(serializeRESP("ERR unknown command"));
