@@ -283,6 +283,9 @@ const server = net.createServer((connection) => {
    
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
+    } else if(command[2]=="WAIT"){
+      let mapsize = replicaConnections.size;
+      connection.write(`:${mapsize}\r\n`);
     }
      else {
       connection.write(serializeRESP("ERR unknown command"));
