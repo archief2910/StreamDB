@@ -327,7 +327,8 @@ const server = net.createServer((connection) => {
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     } else if(command[2]=="WAIT"){
-      console.log(`ankit jaldi kar ${data} `);
+      if(offset==0){connection.write(`:${replicaConnections.size}\r\n`);}
+      else{
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
 broadcastToReplicasWithTimeout(data, timeout, (successfulReplicas) => {
@@ -337,7 +338,7 @@ successfulReplicas = Math.min(successfulReplicas, y);
 console.log(`${successfulReplicas}`)
       connection.write(serializeRESP(successfulReplicas));
 });
-
+    }
     }
      else {
       connection.write(serializeRESP("ERR unknown command"));
