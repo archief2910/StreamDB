@@ -51,7 +51,7 @@ function broadcastToReplicasWithTimeout(data, timeout, callback) {
       console.log(`Number of successful operations: ${y1}`);
       callback(y1);  // Call the callback with the result
     }
-  }, 100); // Check every 100 milliseconds
+  },timeout); // Check every 100 milliseconds
 }
 
 
