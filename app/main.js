@@ -33,7 +33,7 @@ function broadcastToReplicasWithTimeout(data, timeout, callback) {
     // Loop through the replicaConnections and send the data
     replicaConnections.forEach((conn, address) => {
       try {
-        if (availableReplicas[address] < offset) {
+        if (availableReplicas[address] === offset) {
           y1++;
           conn.write(data);
           console.log(`Message sent to replica: ${address}`);
@@ -240,7 +240,7 @@ const server = net.createServer((connection) => {
       const str = command[4];
       connection.write(serializeRESP(str));
     } else if (command[2] === "SET") {
-      offset+= (data+serializeRESP(["REPLCONF","GETACK","*"])).length;
+      offset+= data.length+serializeRESP(["REPLCONF","GETACK","*"]).length;
       broadcastToReplicas(data+serializeRESP(["REPLCONF","GETACK","*"]));
       map1.set(command[4], command[6]);
       if (command.length >= 8 && command[8] === "px") {
@@ -257,7 +257,7 @@ const server = net.createServer((connection) => {
         }
         setTimeout(accurateTimeout, interval);
       }
-      
+
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
       broadcastToReplicas(data);
@@ -311,6 +311,7 @@ const server = net.createServer((connection) => {
     } else if(command[2] === "REPLCONF" && command[4] === "ACK"){
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
       availableReplicas[clientAddress]=parseInt(command[6]);
+      console.log(`${offset} &&& ${availableReplicas[clientAddress]}`)
       offset = Math.max(availableReplicas[clientAddress],offset);
     }
      else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
