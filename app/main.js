@@ -24,31 +24,38 @@ let offset=0;
   });
 }
 
-function broadcastToReplicasWithTimeout(data, timeout, callback) {
-  let y1 = 0;
+function broadcastToReplicasWithTimeout(data, timeout) {
+  return new Promise((resolve) => {
+    let y1 = 0;
 
-  // Use setTimeout to wait for the timeout duration
-  setTimeout(() => {
-    // Loop through the replicaConnections and send the data
-    replicaConnections.forEach((conn, address) => {
-      try {
-        if (availableReplicas[address] === offset) {
-          y1++;
-          conn.write(data);
-          console.log(`Message sent to replica: ${address}`);
+    // Use setTimeout to wait for the timeout duration
+    setTimeout(() => {
+      // Loop through the replicaConnections and send the data
+      replicaConnections.forEach((conn, address) => {
+        try {
+          if (availableReplicas[address] === offset) {
+            y1++;
+            conn.write(data);
+            console.log(`Message sent to replica: ${address}`);
+          }
+        } catch (error) {
+          console.error(`Failed to send message to ${address}:`, error);
         }
-      } catch (error) {
-        console.error(`Failed to send message to ${address}:`, error);
-      }
-    });
+      });
 
-    // After the timeout period, log or return the result
-    console.log(`Number of successful operations: ${y1}`);
-    
-    // Call the callback function with the result
-    callback(y1);
-  }, timeout); // Timeout duration in milliseconds
+      // After the timeout period, resolve the promise with the result
+      console.log(`Number of successful operations: ${y1}`);
+      resolve(y1);  // Resolve the promise with the result
+    }, timeout); // Timeout duration in milliseconds
+  });
 }
+
+// Example usage:
+broadcastToReplicasWithTimeout(data, timeout)
+  .then((successfulReplicas) => {
+    // Handle the result after the timeout
+    console.log(`Successful replicas: ${successfulReplicas}`);
+  });
 
 function parseCommandChunks(data) {
   let currentIndex = 0; // start at the beginning of the data string
@@ -324,14 +331,15 @@ const server = net.createServer((connection) => {
       console.log(`ankit jaldi kar ${data} `);
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
-broadcastToReplicasWithTimeout(data, timeout, (successfulReplicas) => {
-  console.log(`Successful Replicas: ${successfulReplicas}`);
+
+broadcastToReplicasWithTimeout(data, timeout)
+  .then((successfulReplicas) => {
+    console.log(`Successful Replicas: ${successfulReplicas}`);
   console.log(`${successfulReplicas} & ${y} replicas`)
 successfulReplicas = Math.min(successfulReplicas, y);
 console.log(`${successfulReplicas}`)
       connection.write(serializeRESP(successfulReplicas));
-});
-
+  });
     }
      else {
       connection.write(serializeRESP("ERR unknown command"));
