@@ -341,7 +341,7 @@ console.log(`${successfulReplicas}`)
     }
     }else if (command[2]=="TYPE"){
       if(map1.has(command[4])){connection.write(serializeRESP(`${typeof map1.get(command[4])}`));}
-      else{connection.write(serializeRESP("+none"));}
+      else{connection.write(serializeRESP("none"));}
     }
     else {
       connection.write(serializeRESP("ERR unknown command"));
