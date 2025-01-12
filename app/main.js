@@ -17,7 +17,7 @@ let offset=0;
          
           conn.write(message);
           
-          console.log(`Message sent to replica: ${address}`);
+          console.log(`Message sent to replica: ${address}- ${message}`);
       } catch (error) {
           console.error(`Failed to send message to ${address}:`, error);
       }
