@@ -324,6 +324,7 @@ const server = net.createServer((connection) => {
 const y = parseInt(command[4], 10); // Number of replicas to check
 let successfulReplicas = broadcastToReplicasWithTimeout(data, timeout);
 successfulReplicas = Math.min(successfulReplicas, y);
+console.log(`${successfulReplicas}`)
       connection.write(serializeRESP(successfulReplicas));
     }
      else {
