@@ -50,12 +50,7 @@ function broadcastToReplicasWithTimeout(data, timeout) {
   });
 }
 
-// Example usage:
-broadcastToReplicasWithTimeout(data, timeout)
-  .then((successfulReplicas) => {
-    // Handle the result after the timeout
-    console.log(`Successful replicas: ${successfulReplicas}`);
-  });
+
 
 function parseCommandChunks(data) {
   let currentIndex = 0; // start at the beginning of the data string
