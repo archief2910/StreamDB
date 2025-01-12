@@ -36,7 +36,7 @@ function broadcastToReplicasWithTimeout(data, timeout, callback) {
         if (availableReplicas[address] >= offset) {
           y1++;
           conn.write(data);
-          console.log(`Message sent to replica: ${address}`);
+          console.log(`Message sent to replica1111: ${address}`);
         }
       } catch (error) {
         console.error(`Failed to send message to ${address}:`, error);
