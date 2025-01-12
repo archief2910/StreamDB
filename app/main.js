@@ -326,8 +326,7 @@ const server = net.createServer((connection) => {
       const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`)
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
-    } 
-     else if(command[2]=="WAIT"){
+    }  else if(command[2]=="WAIT"){
       if(offset==0){connection.write(`:${replicaConnections.size}\r\n`);}
       else{ broadcastToReplicas(serializeRESP(["REPLCONF","GETACK","*"]));
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
@@ -340,7 +339,11 @@ console.log(`${successfulReplicas}`)
       connection.write(serializeRESP(successfulReplicas));
 });
     }
-    }else {
+    }else if (command[2]=="TYPE"){
+      if(map1.has(command[4])){connection.write(serializeRESP(`${typeof map1.get(command[4])}`));}
+      else{connection.write(serializeRESP("+none"));}
+    }
+    else {
       connection.write(serializeRESP("ERR unknown command"));
     }
     
