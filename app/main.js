@@ -43,7 +43,7 @@ function broadcastToReplicasWithTimeout(data, timeout, callback) {
       }
     });
 
-    timeElapsed += 100; // Update time elapsed (100ms per interval)
+    timeElapsed += timeout; // Update time elapsed (100ms per interval)
 
     if (timeElapsed >= timeout) {
       // Once the timeout is reached, stop the interval and return the result
