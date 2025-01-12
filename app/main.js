@@ -9,60 +9,43 @@ const { getKeysValues,h } = require("./parseRDB.js");
  const masterString = replicaidx == -1 ? "" : process.argv[replicaidx + 1]
  const masterArray = masterString.split(" ")
  const replicaConnections = new Map();
+ const availableReplicas = new Map();
+let offset=0;
  function broadcastToReplicas(message) {
   replicaConnections.forEach((conn, address) => {
       try {
+         
           conn.write(message);
+          
           console.log(`Message sent to replica: ${address}`);
       } catch (error) {
           console.error(`Failed to send message to ${address}:`, error);
       }
   });
 }
-function broadcastToReplicasWithTimeout(message, timeout, y) {
-  const replicaStatus = new Map();
-  let successfulReplicas = 0;
 
-  const checkAndReturn = () => {
-      if (successfulReplicas === y) {
-          clearTimeout(globalTimeout);
-          return successfulReplicas;
-      }
-  };
+function broadcastToReplicasWithTimeout(data, timeout) {
+  let y1 = 0;
 
-  replicaConnections.forEach((conn, address) => {
-      replicaStatus.set(address, false);
-
+  // Use setTimeout to wait for the timeout duration
+  setTimeout(() => {
+    // Loop through the replicaConnections and send the data
+    replicaConnections.forEach((conn, address) => {
       try {
-          // Set timeout for each connection
-          const timer = setTimeout(() => {
-              try {
-                  conn.write(message);
-                  console.log(`Message sent to replica: ${address}`);
-                  replicaStatus.set(address, true);
-                  successfulReplicas++;
-                  checkAndReturn(); // Check after every successful replica
-              } catch (error) {
-                  console.error(`Failed to send message to ${address}:`, error);
-              }
-          }, timeout);
-
-          conn.on('error', (error) => {
-              clearTimeout(timer);
-              console.error(`Connection error for ${address}:`, error);
-          });
+        if (availableReplicas[address] === offset) {
+          y1++;
+          conn.write(data);
+          console.log(`Message sent to replica: ${address}`);
+        }
       } catch (error) {
-          console.error(`Failed to schedule message to ${address}:`, error);
+        console.error(`Failed to send message to ${address}:`, error);
       }
-  });
+    });
 
-  // Final fallback after timeout
-  const globalTimeout = setTimeout(() => {
-      console.log('Timeout reached. Returning successful replicas.');
-  }, timeout);
-
-  // Return the count synchronously (after handling)
-  return successfulReplicas;
+    // After the timeout period, log or return the result
+    console.log(`Number of successful operations: ${y1}`);
+    return y1;
+  }, timeout); // Timeout duration in milliseconds
 }
 
 function parseCommandChunks(data) {
@@ -250,6 +233,7 @@ const server = net.createServer((connection) => {
       const str = command[4];
       connection.write(serializeRESP(str));
     } else if (command[2] === "SET") {
+      offset+= (data+serializeRESP(["REPLCONF","GETACK","*"])).length;
       broadcastToReplicas(data+serializeRESP(["REPLCONF","GETACK","*"]));
       map1.set(command[4], command[6]);
       if (command.length >= 8 && command[8] === "px") {
@@ -317,25 +301,29 @@ const server = net.createServer((connection) => {
       connection.write("+OK\r\n");
     } else if (command[2] === "REPLCONF" && command[4] === "capa"  && replicaidx ===-1) {
       connection.write("+OK\r\n");
-    } else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
+    } else if(command[2] === "REPLCONF" && command[4] === "ACK"){
+      const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
+      availableReplicas[clientAddress]=parseInt(command[6]);
+      offset = Math.max(availableReplicas[clientAddress],offset);
+    }
+     else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
       if (!replicaConnections.has(clientAddress)) {
           replicaConnections.set(clientAddress, connection);
+          availableReplicas.set(clientAddress,0);
           console.log(`Replica added: ${clientAddress}`);
       }
       const base64 = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog=="
       const rdbBuffer = Buffer.from(base64, "base64");
       const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`)
-      
-   
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     } else if(command[2]=="WAIT"){
       console.log(`ankit jaldi kar ${data} `);
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
-const successfulReplicas = broadcastToReplicasWithTimeout(data, timeout, y);
-console.log(`The number of successful replicas is: ${successfulReplicas}`);
+let successfulReplicas = broadcastToReplicasWithTimeout(data, timeout);
+successfulReplicas = Math.min(successfulReplicas, y);
       connection.write(serializeRESP(successfulReplicas));
     }
      else {
