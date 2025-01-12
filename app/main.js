@@ -241,7 +241,7 @@ const server = net.createServer((connection) => {
       connection.write(serializeRESP(str));
     } else if (command[2] === "SET") {
       offset+= data.length+serializeRESP(["REPLCONF","GETACK","*"]).length;
-      broadcastToReplicas(data+serializeRESP(["REPLCONF","GETACK","*"]));
+      broadcastToReplicas(data);
       map1.set(command[4], command[6]);
       if (command.length >= 8 && command[8] === "px") {
         let interval = parseInt(command[10], 10);
@@ -326,9 +326,12 @@ const server = net.createServer((connection) => {
       const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`)
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
-    } else if(command[2]=="WAIT"){
+    } else {
+      connection.write(serializeRESP("ERR unknown command"));
+    }
+     if(command[2]=="WAIT"){
       if(offset==0){connection.write(`:${replicaConnections.size}\r\n`);}
-      else{
+      else{ broadcastToReplicas(serializeRESP(["REPLCONF","GETACK","*"]));
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
 broadcastToReplicasWithTimeout(data, timeout, (successfulReplicas) => {
@@ -340,9 +343,7 @@ console.log(`${successfulReplicas}`)
 });
     }
     }
-     else {
-      connection.write(serializeRESP("ERR unknown command"));
-    }
+    
   });
 });
 server.listen(PORT, "127.0.0.1");
