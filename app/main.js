@@ -24,7 +24,7 @@ let offset=0;
   });
 }
 
-function broadcastToReplicasWithTimeout(data, timeout) {
+function broadcastToReplicasWithTimeout(data, timeout, callback) {
   let y1 = 0;
 
   // Use setTimeout to wait for the timeout duration
@@ -44,7 +44,9 @@ function broadcastToReplicasWithTimeout(data, timeout) {
 
     // After the timeout period, log or return the result
     console.log(`Number of successful operations: ${y1}`);
-    return y1;
+    
+    // Call the callback function with the result
+    callback(y1);
   }, timeout); // Timeout duration in milliseconds
 }
 
@@ -322,11 +324,14 @@ const server = net.createServer((connection) => {
       console.log(`ankit jaldi kar ${data} `);
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
-let successfulReplicas = broadcastToReplicasWithTimeout(data, timeout);
-console.log(`${successfulReplicas} & ${y} replicas`)
+broadcastToReplicasWithTimeout(data, timeout, (successfulReplicas) => {
+  console.log(`Successful Replicas: ${successfulReplicas}`);
+  console.log(`${successfulReplicas} & ${y} replicas`)
 successfulReplicas = Math.min(successfulReplicas, y);
 console.log(`${successfulReplicas}`)
       connection.write(serializeRESP(successfulReplicas));
+});
+
     }
      else {
       connection.write(serializeRESP("ERR unknown command"));
