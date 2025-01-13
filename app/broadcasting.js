@@ -79,7 +79,7 @@ function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, o
       replicaConnections.forEach((conn, address) => {
         try {
           console.log(availableReplicas.get(address) +"yahi hona tha");
-          if (availableReplicas.get(address) === offset) {
+          if (availableReplicas.get(address) == offset) {
             y1++;
             console.log(`Message sent to replica: ${address}`);
           }
