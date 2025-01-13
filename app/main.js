@@ -1,108 +1,19 @@
 const net = require("net");
 const fs = require("fs");
 const path = require("path");
-const { getKeysValues,h } = require("./parseRDB.js");
- // Load your RDB file
- const portIdx = process.argv.indexOf("--port");
+const {getKeysValues,h} = require("./parseRDB.js");
+const {broadcastToReplicas,broadcastToReplicasWithTimeout,parseCommandChunks,serializeRESP} = require("./broadcasting.js");
+const {setNestedValue,getNestedValue}=require("./streams.js");
+const portIdx = process.argv.indexOf("--port");
  const replicaidx = process.argv.indexOf("--replicaof");
  const PORT = portIdx == -1 ? 6379 : process.argv[portIdx + 1]
  const masterString = replicaidx == -1 ? "" : process.argv[replicaidx + 1]
  const masterArray = masterString.split(" ")
  const replicaConnections = new Map();
  const availableReplicas = new Map();
+ const stream =new Map();
 let offset=0;
- function broadcastToReplicas(message) {
-  replicaConnections.forEach((conn, address) => {
-      try {
-         
-          conn.write(message);
-          
-          console.log(`Message sent to replica: ${address}- ${message}`);
-      } catch (error) {
-          console.error(`Failed to send message to ${address}:`, error);
-      }
-  });
-}
 
-function broadcastToReplicasWithTimeout(data, timeout, callback) {
-  let y1 = 0;
-  let timeElapsed = 0;
-
-  // Start checking continuously at regular intervals (e.g., every 100ms)
-  const interval = setInterval(() => {
-    // Loop through the replicaConnections and send the data
-    replicaConnections.forEach((conn, address) => {
-      try {
-        if (availableReplicas[address] === offset) {
-          y1++;
-          
-          console.log(`Message sent to replica1111: ${address}`);
-        }
-      } catch (error) {
-        console.error(`Failed to send message to ${address}:`, error);
-      }
-    });
-
-    timeElapsed += timeout; // Update time elapsed (100ms per interval)
-
-    if (timeElapsed >= timeout) {
-      // Once the timeout is reached, stop the interval and return the result
-      clearInterval(interval);
-      console.log(`Number of successful operations: ${y1}`);
-      callback(y1);  // Call the callback with the result
-    }
-  },timeout); // Check every 100 milliseconds
-}
-
-
-function parseCommandChunks(data) {
-  let currentIndex = 0; // start at the beginning of the data string
-  const commandChunks = []; // this will store each parsed command chunk
-  // loop throught the entire string to find all command chunks
-  while (currentIndex < data.length) {
-    // find the start index of the next command, indicated by '*'
-    const nextCommandStart = data.indexOf('*', currentIndex + 1);
-    // determine the end of the current chunk: either the start of the next command chunk or the end of the data
-    const currentChunkEnd = nextCommandStart === -1 ? data.length : nextCommandStart;
-    // extract the command chunk from currentIndex to the determined end
-    if (currentIndex !== currentChunkEnd) { // ensure that we do no include empty command
-      commandChunks.push(data.substring(currentIndex, currentChunkEnd));
-    }
-    // move the currentIndex to the start of the next command
-    // if no next command, break the loop by setting currentIndex to data.length
-    currentIndex = nextCommandStart === -1 ? data.length : nextCommandStart;
-  }
-  return commandChunks;
-}
- // Logs the Map with key-value pairs
-// Function to serialize data into RESP format
-const serializeRESP = (obj) => {
-  let resp = '';
-  switch (typeof obj) {
-    case 'object':
-      if (Array.isArray(obj)) {
-        resp += `*${obj.length}\r\n`;
-        obj.forEach(item => {
-          resp += serializeRESP(item);
-        });
-      } else if (obj === null) {
-        resp += `$-1\r\n`;
-      }
-      break;
-    case 'string':
-      resp += `$${obj.length}\r\n${obj}\r\n`;
-      break;
-    case 'number':
-      resp += `:${obj}\r\n`;
-      break;
-    case 'boolean':
-      resp += obj ? `+OK\r\n` : `-ERR false\r\n`;
-      break;
-    default:
-      resp += `$-1\r\n`;
-  }
-  return resp;
-};
 let rdb = null; // Initialize RDB to null
 let map1=new Map();
 let map3 = new Map();
@@ -131,6 +42,7 @@ if (addr.get("dir") && addr.get("dbfilename")) {
     console.log(`DB doesn't exist at provided path: ${dbPath}`);
   }
 }
+// ye hai replica 
 if (replicaidx !== -1) {
   const performHandshake = () => {
     const [host, port] = masterArray; // Extract host and port
@@ -228,7 +140,7 @@ if (replicaidx !== -1) {
   performHandshake(); // Trigger handshake
 }
 
-
+// ye hai master server
 const server = net.createServer((connection) => {
   console.log("Client connected");
   connection.on("data", (data) => {
@@ -241,7 +153,7 @@ const server = net.createServer((connection) => {
       connection.write(serializeRESP(str));
     } else if (command[2] === "SET") {
       offset+= data.length+serializeRESP(["REPLCONF","GETACK","*"]).length;
-      broadcastToReplicas(data);
+      broadcastToReplicas(replicaConnections,data);
       map1.set(command[4], command[6]);
       if (command.length >= 8 && command[8] === "px") {
         let interval = parseInt(command[10], 10);
@@ -260,7 +172,7 @@ const server = net.createServer((connection) => {
 
       connection.write(serializeRESP(true));
     } else if (command[2] === "GET") {
-      broadcastToReplicas(data);
+      broadcastToReplicas(replicaConnections,data);
       console.log(`balle`);
       let currentTimestamp = Date.now();
       if (map1.has(command[4])){
@@ -283,7 +195,7 @@ const server = net.createServer((connection) => {
         connection.write(serializeRESP(null));
       }
     } else if (command[2] === "KEYS") {
-      broadcastToReplicas(data);
+      broadcastToReplicas(replicaConnections,data);
      // Get all keys from map1
   const keys = Array.from(map1.keys());
   // Serialize keys into RESP format
@@ -326,12 +238,12 @@ const server = net.createServer((connection) => {
       const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`)
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
-    }  else if(command[2]=="WAIT"){
+    }  else if(command[2]==="WAIT"){
       if(offset==0){connection.write(`:${replicaConnections.size}\r\n`);}
-      else{ broadcastToReplicas(serializeRESP(["REPLCONF","GETACK","*"]));
+      else{ broadcastToReplicas(replicaConnections,serializeRESP(["REPLCONF","GETACK","*"]));
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
-broadcastToReplicasWithTimeout(data, timeout, (successfulReplicas) => {
+broadcastToReplicasWithTimeout(replicaConnections, availableReplicas,offset, timeout, (successfulReplicas) => {
   console.log(`Successful Replicas: ${successfulReplicas}`);
   console.log(`${successfulReplicas} & ${y} replicas`)
 successfulReplicas = Math.min(successfulReplicas, y);
@@ -339,9 +251,17 @@ console.log(`${successfulReplicas}`)
       connection.write(serializeRESP(successfulReplicas));
 });
     }
-    }else if (command[2]=="TYPE"){
-      if(map1.has(command[4])){connection.write(serializeRESP(`${typeof map1.get(command[4])}`));}
+    }else if (command[2]==="TYPE"){
+      if(stream.has(command[4])){connection.write(serializeRESP(`+stream`));}
+      else if(map1.has(command[4])){connection.write(serializeRESP(`${typeof map1.get(command[4])}`));}
       else{connection.write(serializeRESP("none"));}
+    }else if(command[2]==="XADD"){
+      const parts = command[6].split('-');
+
+const f = parseInt(parts[0], 10);
+const s = parseInt(parts[1], 10);
+     setNestedValue(stream,command[4],f,s,command[8],command[10]);
+     connection.write(serializeRESP(command[6]));
     }
     else {
       connection.write(serializeRESP("ERR unknown command"));
