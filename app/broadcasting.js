@@ -69,7 +69,7 @@ function broadcastToReplicas(replicaConnections,message) {
   });
 }
 function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, offset, timeout, callback) {
-  setTimeout(() => {
+  
     let y1 = 0;
     let timeElapsed = 0;
 
@@ -97,7 +97,7 @@ function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, o
         callback(y1); // Call the callback with the result
       }
     }, timeout); // Check every timeout milliseconds
-  }, timeout); // Delay execution of the logic by `timeout` milliseconds
+   // Delay execution of the logic by `timeout` milliseconds
 }
 
 module.exports = {
