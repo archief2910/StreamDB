@@ -252,7 +252,7 @@ console.log(`${successfulReplicas}`)
 });
     }
     }else if (command[2]==="TYPE"){
-      if(stream.has(command[4])){connection.write(serializeRESP(`+stream`));}
+      if(stream.has(command[4])){connection.write(serializeRESP(`stream`));}
       else if(map1.has(command[4])){connection.write(serializeRESP(`${typeof map1.get(command[4])}`));}
       else{connection.write(serializeRESP("none"));}
     }else if(command[2]==="XADD"){
