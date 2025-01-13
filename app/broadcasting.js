@@ -1,4 +1,12 @@
-
+/**
+ * Broadcasts data to replicas with a timeout mechanism.
+ * 
+ * @param {Map<string, object>} replicaConnections - A map where the key is a client address (string) and the value is the connection object (e.g., socket).
+ * @param {Map<string, number>} availableReplicas - A map where the key is a client address (string) and the value is a numerical offset or status.
+ * @param {number} offset - The offset value to check in the `availableReplicas` map.
+ * @param {number} timeout - The timeout in milliseconds after which the function starts executing.
+ * @param {function(number): void} callback - A callback function that takes the number of successful operations as an argument.
+ */
 function parseCommandChunks(data) {
   let currentIndex = 0; // start at the beginning of the data string
   const commandChunks = []; // this will store each parsed command chunk
