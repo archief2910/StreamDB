@@ -152,7 +152,7 @@ const server = net.createServer((connection) => {
       const str = command[4];
       connection.write(serializeRESP(str));
     } else if (command[2] === "SET") {
-      offset+= data.length+serializeRESP(["REPLCONF","GETACK","*"]).length;
+      offset+= data.length;
       broadcastToReplicas(replicaConnections,data);
       map1.set(command[4], command[6]);
       if (command.length >= 8 && command[8] === "px") {
@@ -244,7 +244,7 @@ const server = net.createServer((connection) => {
       if(offset==0){connection.write(`:${replicaConnections.size}\r\n`);}
       else{ 
         broadcastToReplicas(replicaConnections,serializeRESP(["REPLCONF","GETACK","*"]));
-        offset =Math.max(...availableReplicas.values()); console.log(offset+"laude main vapas aa gaya");
+        console.log(offset+"laude main vapas aa gaya");
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
 broadcastToReplicasWithTimeout(replicaConnections, availableReplicas,offset, timeout, (successfulReplicas) => {
