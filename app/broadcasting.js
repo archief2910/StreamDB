@@ -61,31 +61,36 @@ function broadcastToReplicas(replicaConnections,message) {
   });
 }
 function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, offset, timeout, callback) {
-  let y1 = 0;
-  let timeElapsed = 0;
-  // Start checking continuously at regular intervals (e.g., every 100ms)
-  const interval = setInterval(() => {
-    // Loop through the replicaConnections and send the data
-    replicaConnections.forEach((conn, address) => {
-      try {
-        if (availableReplicas[address] === offset) {
-          y1++;
-          
-          console.log(`Message sent to replica1111: ${address}`);
+  setTimeout(() => {
+    let y1 = 0;
+    let timeElapsed = 0;
+
+    // Start checking continuously at regular intervals (e.g., every 100ms)
+    const interval = setInterval(() => {
+      // Loop through the replicaConnections and send the data
+      replicaConnections.forEach((conn, address) => {
+        try {
+          if (availableReplicas[address] === offset) {
+            y1++;
+            console.log(`Message sent to replica: ${address}`);
+          }
+        } catch (error) {
+          console.error(`Failed to send message to ${address}:`, error);
         }
-      } catch (error) {
-        console.error(`Failed to send message to ${address}:`, error);
+      });
+
+      timeElapsed += timeout; // Update time elapsed (100ms per interval)
+
+      if (timeElapsed >= timeout) {
+        // Once the timeout is reached, stop the interval and return the result
+        clearInterval(interval);
+        console.log(`Number of successful operations: ${y1}`);
+        callback(y1); // Call the callback with the result
       }
-    });
-    timeElapsed += timeout; // Update time elapsed (100ms per interval)
-    if (timeElapsed >= timeout) {
-      // Once the timeout is reached, stop the interval and return the result
-      clearInterval(interval);
-      console.log(`Number of successful operations: ${y1}`);
-      callback(y1);  // Call the callback with the result
-    }
-  },timeout); // Check every 100 milliseconds
+    }, timeout); // Check every timeout milliseconds
+  }, timeout); // Delay execution of the logic by `timeout` milliseconds
 }
+
 module.exports = {
   broadcastToReplicas,broadcastToReplicasWithTimeout,parseCommandChunks,serializeRESP,
 };
