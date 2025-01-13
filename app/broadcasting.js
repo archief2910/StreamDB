@@ -47,8 +47,7 @@ const serializeRESP = (obj) => {
   return resp;
 };
 
-
-function broadcastToReplicas(replicaConnections,message) {
+function broadcastToReplicas(message) {
   replicaConnections.forEach((conn, address) => {
       try {
          
@@ -60,7 +59,7 @@ function broadcastToReplicas(replicaConnections,message) {
       }
   });
 }
-function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, offset, timeout, callback) {
+function broadcastToReplicasWithTimeout(data, timeout, callback) {
   let y1 = 0;
   let timeElapsed = 0;
   // Start checking continuously at regular intervals (e.g., every 100ms)
@@ -68,7 +67,7 @@ function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, o
     // Loop through the replicaConnections and send the data
     replicaConnections.forEach((conn, address) => {
       try {
-        if (availableReplicas[address] >= offset) {
+        if (availableReplicas[address] === offset) {
           y1++;
           
           console.log(`Message sent to replica1111: ${address}`);
@@ -86,6 +85,7 @@ function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, o
     }
   },timeout); // Check every 100 milliseconds
 }
+
 module.exports = {
   broadcastToReplicas,broadcastToReplicasWithTimeout,parseCommandChunks,serializeRESP,
 };

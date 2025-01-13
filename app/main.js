@@ -240,7 +240,8 @@ const server = net.createServer((connection) => {
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
     }  else if(command[2]==="WAIT"){
       if(offset==0){connection.write(`:${replicaConnections.size}\r\n`);}
-      else{ broadcastToReplicas(replicaConnections,serializeRESP(["REPLCONF","GETACK","*"]));
+      else{ 
+        broadcastToReplicas(replicaConnections,serializeRESP(["REPLCONF","GETACK","*"]));
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
 broadcastToReplicasWithTimeout(replicaConnections, availableReplicas,offset, timeout, (successfulReplicas) => {
