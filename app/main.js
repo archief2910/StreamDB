@@ -244,6 +244,7 @@ const server = net.createServer((connection) => {
       if(offset==0){connection.write(`:${replicaConnections.size}\r\n`);}
       else{ 
         broadcastToReplicas(replicaConnections,serializeRESP(["REPLCONF","GETACK","*"]));
+        console.log(offset+"laude main hu");
       const timeout = parseInt(command[6], 10); // Timeout in milliseconds
 const y = parseInt(command[4], 10); // Number of replicas to check
 broadcastToReplicasWithTimeout(replicaConnections, availableReplicas,offset, timeout, (successfulReplicas) => {
