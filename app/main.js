@@ -222,9 +222,10 @@ const server = net.createServer((connection) => {
       connection.write("+OK\r\n");
     } else if(command[2] === "REPLCONF" && command[4] === "ACK"){
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
-      availableReplicas[clientAddress]=parseInt(command[6]);
+      
+      availableReplicas.set(clientAddress,parseInt(command[6]));
       console.log(`${offset} &&& ${availableReplicas[clientAddress]}`)
-      offset = Math.min(availableReplicas[clientAddress],offset);
+      offset = Math.min(availableReplicas.get(clientAddress),offset);
       console.log(`${offset} &&& ${availableReplicas[clientAddress]}`)
     }
      else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
