@@ -1,7 +1,6 @@
 const replicaConnections = new Map();
 const availableReplicas = new Map();
-let timeout=0;
-let offset=0;
+
 function parseCommandChunks(data) {
   let currentIndex = 0; // start at the beginning of the data string
   const commandChunks = []; // this will store each parsed command chunk
