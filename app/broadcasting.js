@@ -1,5 +1,3 @@
-const replicaConnections = new Map();
-const availableReplicas = new Map();
 
 function parseCommandChunks(data) {
   let currentIndex = 0; // start at the beginning of the data string
@@ -20,42 +18,7 @@ function parseCommandChunks(data) {
   }
   return commandChunks;
 }
-function broadcastToReplicas(replicaConnections, message) {
-  replicaConnections.forEach((conn, address) => {
-    try {
-      conn.write(message);
-      console.log(`Message sent to replica: ${address} - ${message}`);
-    } catch (error) {
-      console.error(`Failed to send message to ${address}:`, error);
-    }
-  });
-}
 
-function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, offset, timeout, callback) {
-  let y1 = 0;
-  let timeElapsed = 0;
-
-  const interval = setInterval(() => {
-    replicaConnections.forEach((conn, address) => {
-      try {
-        if (availableReplicas[address] === offset) {
-          y1++;
-          console.log(`Message sent to replica: ${address}`);
-        }
-      } catch (error) {
-        console.error(`Failed to process replica ${address}:`, error);
-      }
-    });
-
-    timeElapsed += timeout;
-
-    if (timeElapsed >= timeout) {
-      clearInterval(interval);
-      console.log(`Number of successful operations: ${y1}`);
-      callback(y1);
-    }
-  }, timeout);
-}
 const serializeRESP = (obj) => {
   let resp = '';
   switch (typeof obj) {
@@ -83,7 +46,46 @@ const serializeRESP = (obj) => {
   }
   return resp;
 };
+
+
+function broadcastToReplicas(replicaConnections,message) {
+  replicaConnections.forEach((conn, address) => {
+      try {
+         
+          conn.write(message);
+          
+          console.log(`Message sent to replica: ${address}- ${message}`);
+      } catch (error) {
+          console.error(`Failed to send message to ${address}:`, error);
+      }
+  });
+}
+function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, offset, timeout, callback) {
+  let y1 = 0;
+  let timeElapsed = 0;
+  // Start checking continuously at regular intervals (e.g., every 100ms)
+  const interval = setInterval(() => {
+    // Loop through the replicaConnections and send the data
+    replicaConnections.forEach((conn, address) => {
+      try {
+        if (availableReplicas[address] === offset) {
+          y1++;
+          
+          console.log(`Message sent to replica1111: ${address}`);
+        }
+      } catch (error) {
+        console.error(`Failed to send message to ${address}:`, error);
+      }
+    });
+    timeElapsed += timeout; // Update time elapsed (100ms per interval)
+    if (timeElapsed >= timeout) {
+      // Once the timeout is reached, stop the interval and return the result
+      clearInterval(interval);
+      console.log(`Number of successful operations: ${y1}`);
+      callback(y1);  // Call the callback with the result
+    }
+  },timeout); // Check every 100 milliseconds
+}
 module.exports = {
   broadcastToReplicas,broadcastToReplicasWithTimeout,parseCommandChunks,serializeRESP,
 };
-
