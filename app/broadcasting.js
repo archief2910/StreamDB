@@ -81,6 +81,6 @@ const serializeRESP = (obj) => {
   return resp;
 };
 module.exports = {
-  
+  broadcastToReplicas,broadcastToReplicasWithTimeout,parseCommandChunks,serializeRESP,
 };
 
