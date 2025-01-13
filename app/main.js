@@ -247,6 +247,7 @@ const server = net.createServer((connection) => {
 const y = parseInt(command[4], 10); // Number of replicas to check
 broadcastToReplicasWithTimeout(replicaConnections, availableReplicas,offset, timeout, (successfulReplicas) => {
   console.log(`Successful Replicas: ${successfulReplicas}`);
+  console.log(`offset: ${offset}`);
   console.log(`${successfulReplicas} & ${y} replicas`)
 successfulReplicas = Math.min(successfulReplicas, y);
 console.log(`${successfulReplicas}`)
