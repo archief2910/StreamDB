@@ -152,7 +152,7 @@ const server = net.createServer((connection) => {
       const str = command[4];
       connection.write(serializeRESP(str));
     } else if (command[2] === "SET") {
-      offset+= data.length;
+      offset+= serializeRESP([command[2],command[4],command[6]]).length;
       broadcastToReplicas(replicaConnections,data);
       map1.set(command[4], command[6]);
       if (command.length >= 8 && command[8] === "px") {
