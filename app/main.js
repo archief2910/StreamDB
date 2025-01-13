@@ -225,6 +225,7 @@ const server = net.createServer((connection) => {
       availableReplicas[clientAddress]=parseInt(command[6]);
       console.log(`${offset} &&& ${availableReplicas[clientAddress]}`)
       offset = Math.min(availableReplicas[clientAddress],offset);
+      console.log(`${offset} &&& ${availableReplicas[clientAddress]}`)
     }
      else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
