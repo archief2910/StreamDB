@@ -78,8 +78,8 @@ function broadcastToReplicasWithTimeout(replicaConnections, availableReplicas, o
       // Loop through the replicaConnections and send the data
       replicaConnections.forEach((conn, address) => {
         try {
-          console.log(availableReplicas[address]);
-          if (availableReplicas[address] === offset) {
+          console.log(availableReplicas.get(address));
+          if (availableReplicas.get(address) === offset) {
             y1++;
             console.log(`Message sent to replica: ${address}`);
           }
