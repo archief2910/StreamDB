@@ -410,13 +410,23 @@ const s = parseInt(parts[1], 10);
         parts=lastrange.split('-');
         let f2 = parseInt(parts[0], 10);
         let s2 = parseInt(parts[1], 10);
-    if(f<f2 && f>f1 ){res1.push(entry);}
-     else if(f==f1){
-      if(s>=s1){res1.push(entry);}
+    if(f2>f1){
+      if(f>f1 && f<f2){
+        res1.push(entry);
+      }
+      else if(f==f1){
+        if(s>=s1){res1.push(entry);}
+      }
+      else if(f==f2){
+        if(s<=s2){res1.push(entry);}
+      }
+    }
+     else if(f1==f2){
+      if(f==f1){
+        if(s>=s1 && s<=s2){res1.push(entry);}
+      }
      }
-     else if(f==f2){
-      if(s<=s2){res1.push(entry);}
-     }
+     
       });
       connection.write(serializeRESP(res1));
 
