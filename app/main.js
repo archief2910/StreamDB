@@ -321,7 +321,8 @@ const s = parseInt(parts[1], 10);
 }else{
      
      const greatestValue = Math.max(...mp.keys());
-     if(greatestValue<=f){
+     if(f<=0 && s<=0){connection.write("-ERR The ID specified in XADD must be greater than 0-0\r\n");}
+     else if(greatestValue<=f){
       if(greatestValue==f){
        let first=mp.get(f);
        const greatestValue1 = Math.max(...first.keys());
