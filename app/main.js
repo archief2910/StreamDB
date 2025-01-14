@@ -314,7 +314,7 @@ else{
 const f = parseInt(parts[0], 10);
 const s = parseInt(parts[1], 10);
  let mp = stream.get(command[4]);
- if(mp.length==0){
+ if(mp==undefined){
   if(f<=0 && s<=0){connection.write(serializeRESPONSE("ERR The ID specified in XADD must be greater than 0-0"));}
  }else{
      
