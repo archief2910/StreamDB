@@ -398,7 +398,7 @@ const s = parseInt(parts[1], 10);
         } 
       }
       let res1=[];
-      res.forEach(entry => {
+      /*res.forEach(entry => {
         
         let parts = entry.key.split('-');
         let f = parseInt(parts[0], 10);
@@ -416,8 +416,8 @@ const s = parseInt(parts[1], 10);
      else if(f==f2){
       if(s<=s2){res1.push(entry);}
      }
-      });
-      connection.write(serializeRESP(res1));
+      });*/
+      connection.write(serializeRESP(res));
 
 
     }
