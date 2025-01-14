@@ -263,7 +263,7 @@ console.log(`${successfulReplicas}`)
     }else if(command[2].toUpperCase()==="XADD"){
       let i=8;
       let k1=[];
-      while(i<=command.length){
+      while(i<command.length){
       k1.push(command[i]); i+=2;
       }
       if(command[6]=="*"){
