@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const {getKeysValues,h} = require("./parseRDB.js");
 const {broadcastToReplicas,broadcastToReplicasWithTimeout,parseCommandChunks,serializeRESP} = require("./broadcasting.js");
-const {setNestedValue,getNestedValue}=require("./streams.js");
+const {setNestedValue,getEntriesInRange}=require("./streams.js");
 const portIdx = process.argv.indexOf("--port");
  const replicaidx = process.argv.indexOf("--replicaof");
  const PORT = portIdx == -1 ? 6379 : process.argv[portIdx + 1]
@@ -261,10 +261,15 @@ console.log(`${successfulReplicas}`)
       else if(map1.has(command[4])){connection.write(serializeRESP(`${typeof map1.get(command[4])}`));}
       else{connection.write(serializeRESP("none"));}
     }else if(command[2]==="XADD"){
+      let i=8;
+      let k1=[];
+      while(i<=command.length){
+      k1.push(command[i]); i+=2;
+      }
       if(command[6]=="*"){
         const f=Date.now();
         if(!stream.has(command[4])){
-          setNestedValue(stream,command[4],f,0,command[8],command[10]);
+          setNestedValue(stream,command[4],f,0,k1);
           connection.write(serializeRESP(`${f}-${0}`));
         }else{
         let mp = stream.get(command[4]);
@@ -274,15 +279,15 @@ console.log(`${successfulReplicas}`)
     if(greatestValue==f){
       let first=mp.get(f);
        const greatestValue1 = Math.max(...first.keys());
-       setNestedValue(stream,command[4],f,1+greatestValue1,command[8],command[10]);
+       setNestedValue(stream,command[4],f,1+greatestValue1,k1);
         connection.write(serializeRESP(`${f}-${1+greatestValue1}`));
     }
     else{
-      if(f==0){setNestedValue(stream,command[4],f,1,command[8],command[10]);
+      if(f==0){setNestedValue(stream,command[4],f,1,k1);
         connection.write(serializeRESP(`${f}-1`));}
         else{
           
-          setNestedValue(stream,command[4],f,0,command[8],command[10]);
+          setNestedValue(stream,command[4],f,0,k1);
           connection.write(serializeRESP(`${f}-0`));}
       
     }
@@ -294,11 +299,11 @@ if(parts[1]=="*"){
   const f = parseInt(parts[0], 10);
   
   if(!stream.has(command[4])){
-    if(f==0){setNestedValue(stream,command[4],f,1,command[8],command[10]);
+    if(f==0){setNestedValue(stream,command[4],f,1,k1);
       connection.write(serializeRESP(`${f}-1`));}
       else{
         
-        setNestedValue(stream,command[4],f,0,command[8],command[10]);
+        setNestedValue(stream,command[4],f,0,k1);
         connection.write(serializeRESP(`${f}-0`));}
   }else{
   let mp = stream.get(command[4]);
@@ -309,15 +314,15 @@ if(parts[1]=="*"){
     if(greatestValue==f){
       let first=mp.get(f);
        const greatestValue1 = Math.max(...first.keys());
-       setNestedValue(stream,command[4],f,1+greatestValue1,command[8],command[10]);
+       setNestedValue(stream,command[4],f,1+greatestValue1,k1);
         connection.write(serializeRESP(`${f}-${1+greatestValue1}`));
     }
     else{
-      if(f==0){setNestedValue(stream,command[4],f,1,command[8],command[10]);
+      if(f==0){setNestedValue(stream,command[4],f,1,k1);
         connection.write(serializeRESP(`${f}-1`));}
         else{
           
-          setNestedValue(stream,command[4],f,0,command[8],command[10]);
+          setNestedValue(stream,command[4],f,0,k1);
           connection.write(serializeRESP(`${f}-0`));}
       
     }
@@ -330,7 +335,7 @@ const s = parseInt(parts[1], 10);
  let mp = stream.get(command[4]);
  if(!stream.has(command[4])){
   if(f<=0 && s<=0){connection.write("-ERR The ID specified in XADD must be greater than 0-0\r\n");}
-  else{setNestedValue(stream,command[4],f,s,command[8],command[10]);
+  else{setNestedValue(stream,command[4],f,s,k1);
   connection.write(serializeRESP(command[6]));}
 }else{
      
@@ -342,13 +347,13 @@ const s = parseInt(parts[1], 10);
        const greatestValue1 = Math.max(...first.keys());
        if(greatestValue1<s){
         console.log("gadbad hogayi");
-        setNestedValue(stream,command[4],f,s,command[8],command[10]);
+        setNestedValue(stream,command[4],f,s,k1);
       connection.write(serializeRESP(command[6]));
        }
        else{connection.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
       }
       else{
-        setNestedValue(stream,command[4],f,s,command[8],command[10]);
+        setNestedValue(stream,command[4],f,s,k1);
       connection.write(serializeRESP(command[6]));
       }
      }
@@ -362,6 +367,59 @@ const s = parseInt(parts[1], 10);
     }
     
     }
+    }else if(command[2]=="XRANGE"){
+      let firstrange="";
+      let lastrange="";
+      
+        let first=stream.get(command[4]);
+       const min1 = Math.min(...first.keys());
+        let second=first.get(min1);
+        const min2 = Math.min(...second.keys());
+        firstrange=`${min1}-${min2}`;
+      
+      
+        let first1=stream.get(command[4]);
+        const mi1 = Math.max(...first1.keys());
+         let second1=first.get(mi1);
+         const mi2 = Math.max(...second1.keys());
+         lastrange=`${mi1}-${mi2}`;
+      
+      let res=getEntriesInRange(stream,command[4],firstrange,lastrange);
+      if(command[6]!="-"){
+        firstrange=command[6];
+        if (!firstrange.includes("-")) {
+          firstrange+="-0";
+        } 
+      }
+      if(command[8]!="+"){
+        lastrange=command[8];
+        if (!lastrange.includes("-")) {
+          lastrange+="-0";
+        } 
+      }
+      let res1=[];
+      res.forEach(entry => {
+        
+        let parts = entry.key.split('-');
+        let f = parseInt(parts[0], 10);
+        let s = parseInt(parts[1], 10);
+        parts=firstrange.split('-');
+        let f1 = parseInt(parts[0], 10);
+        let s1 = parseInt(parts[1], 10);
+        parts=lastrange.split('-');
+        let f2 = parseInt(parts[0], 10);
+        let s2 = parseInt(parts[1], 10);
+    if(f<f2 && f>f1 ){res1.push(entry);}
+     else if(f==f1){
+      if(s>=s1){res1.push(entry);}
+     }
+     else if(f==f2){
+      if(s<=s2){res1.push(entry);}
+     }
+      });
+      connection.write(serializeRESP(res1));
+
+
     }
     else {
       connection.write(serializeRESP("ERR unknown command"));
