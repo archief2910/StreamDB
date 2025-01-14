@@ -42,10 +42,7 @@ function getEntriesInRange(mp, key1, rangeStart, rangeEnd) {
             (key2 > key2Start || key3 >= key3Start) &&
             (key2 < key2End || key3 <= key3End)
           ) {
-            // Add all vector values to the result array
-            
-              result.push([ `${key2}-${key3}`, level3 ]);
-            
+            result.push([`${key2}-${key3}`, level3]);  // level3 is a vector (array)
           }
         }
       }
@@ -54,8 +51,8 @@ function getEntriesInRange(mp, key1, rangeStart, rangeEnd) {
 
   // Sort the results by key2 and key3
   result.sort((a, b) => {
-    const [keyA2, keyA3] = a.key.split('-').map(Number);
-    const [keyB2, keyB3] = b.key.split('-').map(Number);
+    const [keyA2, keyA3] = a[0].split('-').map(Number);  // Access key2 and key3 from the string key
+    const [keyB2, keyB3] = b[0].split('-').map(Number);  // Access key2 and key3 from the string key
     return keyA2 - keyB2 || keyA3 - keyB3;
   });
 
