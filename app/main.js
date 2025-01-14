@@ -289,8 +289,17 @@ console.log(`${successfulReplicas}`)
 if(parts[1]=="*"){
   const f = parseInt(parts[0], 10);
   let mp = stream.get(command[4]);
+
   const greatestValue = Math.max(...mp.keys());
-  if(greatestValue>f){connection.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
+  if(!stream.has(command[4])){
+    if(f==0){setNestedValue(stream,command[4],f,1,command[8],command[10]);
+      connection.write(serializeRESP(command[6]));}
+      else{
+        
+        setNestedValue(stream,command[4],f,0,command[8],command[10]);
+        connection.write(serializeRESP(command[6]));}
+  }
+  else if(greatestValue>f){connection.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
   else{
     if(greatestValue==f){
       let first=mp.get(f);
