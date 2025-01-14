@@ -44,7 +44,7 @@ function getEntriesInRange(mp, key1, rangeStart, rangeEnd) {
           ) {
             // Add all vector values to the result array
             
-              result.push({ key: `${key2}-${key3}`, level3 });
+              result.push([ `${key2}-${key3}`, level3 ]);
             
           }
         }
