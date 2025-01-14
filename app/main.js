@@ -326,6 +326,7 @@ const s = parseInt(parts[1], 10);
        let first=mp.get(f);
        const greatestValue1 = Math.max(...first.keys());
        if(greatestValue1<s){
+        console.log("gadbad hogayi");
         setNestedValue(stream,command[4],f,s,command[8],command[10]);
       connection.write(serializeRESP(command[6]));
        }
