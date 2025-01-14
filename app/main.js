@@ -261,12 +261,89 @@ console.log(`${successfulReplicas}`)
       else if(map1.has(command[4])){connection.write(serializeRESP(`${typeof map1.get(command[4])}`));}
       else{connection.write(serializeRESP("none"));}
     }else if(command[2]==="XADD"){
+      if(command[6]=="*"){
+        const f=Date.now();
+        let mp = stream.get(command[4]);
+  const greatestValue = Math.max(...mp.keys());
+  if(greatestValue>f){connection.write(serializeRESPONSE("ERR The ID specified in XADD is equal or smaller than the target stream top item"));}
+  else{
+    if(greatestValue==f){
+      let first=mp.get(f);
+       const greatestValue1 = Math.max(...first.keys());
+       setNestedValue(stream,command[4],f,1+greatestValue1,command[8],command[10]);
+        connection.write(serializeRESP(command[6]));
+    }
+    else{
+      if(f==0){setNestedValue(stream,command[4],f,1,command[8],command[10]);
+        connection.write(serializeRESP(command[6]));}
+        else{
+          
+          setNestedValue(stream,command[4],f,0,command[8],command[10]);
+          connection.write(serializeRESP(command[6]));}
+      
+    }
+  }
+      }
+      else{
       const parts = command[6].split('-');
+if(parts[1]=="*"){
+  const f = parseInt(parts[0], 10);
+  let mp = stream.get(command[4]);
+  const greatestValue = Math.max(...mp.keys());
+  if(greatestValue>f){connection.write(serializeRESPONSE("ERR The ID specified in XADD is equal or smaller than the target stream top item"));}
+  else{
+    if(greatestValue==f){
+      let first=mp.get(f);
+       const greatestValue1 = Math.max(...first.keys());
+       setNestedValue(stream,command[4],f,1+greatestValue1,command[8],command[10]);
+        connection.write(serializeRESP(command[6]));
+    }
+    else{
+      if(f==0){setNestedValue(stream,command[4],f,1,command[8],command[10]);
+        connection.write(serializeRESP(command[6]));}
+        else{
+          
+          setNestedValue(stream,command[4],f,0,command[8],command[10]);
+          connection.write(serializeRESP(command[6]));}
+      
+    }
+  }
 
+}
+else{
 const f = parseInt(parts[0], 10);
 const s = parseInt(parts[1], 10);
-     setNestedValue(stream,command[4],f,s,command[8],command[10]);
-     connection.write(serializeRESP(command[6]));
+ let mp = stream.get(command[4]);
+ if(mp.size==0){
+  if(f<=0 && s<=0){connection.write(serializeRESPONSE("ERR The ID specified in XADD must be greater than 0-0"));}
+ }else{
+     
+     const greatestValue = Math.max(...mp.keys());
+     if(greatestValue<=f){
+      if(greatestValue==f){
+       let first=mp.get(f);
+       const greatestValue1 = Math.max(...first.keys());
+       if(greatestValue1<s){
+        setNestedValue(stream,command[4],f,s,command[8],command[10]);
+      connection.write(serializeRESP(command[6]));
+       }
+       else{connection.write(serializeRESPONSE("ERR The ID specified in XADD is equal or smaller than the target stream top item"));}
+      }
+      else{
+        setNestedValue(stream,command[4],f,s,command[8],command[10]);
+      connection.write(serializeRESP(command[6]));
+      }
+     }
+     else{
+      connection.write(serializeRESPONSE("ERR The ID specified in XADD is equal or smaller than the target stream top item"));
+     }
+     
+     
+     }
+    
+    }
+    
+    }
     }
     else {
       connection.write(serializeRESP("ERR unknown command"));
