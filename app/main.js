@@ -265,7 +265,7 @@ console.log(`${successfulReplicas}`)
         const f=Date.now();
         let mp = stream.get(command[4]);
   const greatestValue = Math.max(...mp.keys());
-  if(greatestValue>f){connection.write("-error ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
+  if(greatestValue>f){connection.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
   else{
     if(greatestValue==f){
       let first=mp.get(f);
@@ -290,7 +290,7 @@ if(parts[1]=="*"){
   const f = parseInt(parts[0], 10);
   let mp = stream.get(command[4]);
   const greatestValue = Math.max(...mp.keys());
-  if(greatestValue>f){connection.write("-error ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
+  if(greatestValue>f){connection.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
   else{
     if(greatestValue==f){
       let first=mp.get(f);
@@ -315,7 +315,7 @@ const f = parseInt(parts[0], 10);
 const s = parseInt(parts[1], 10);
  let mp = stream.get(command[4]);
  if(!stream.has(command[4])){
-  if(f<=0 && s<=0){connection.write("-error ERR The ID specified in XADD must be greater than 0-0\r\n");}
+  if(f<=0 && s<=0){connection.write("-ERR The ID specified in XADD must be greater than 0-0\r\n");}
   else{setNestedValue(stream,command[4],f,s,command[8],command[10]);
   connection.write(serializeRESP(command[6]));}
 }else{
@@ -330,7 +330,7 @@ const s = parseInt(parts[1], 10);
         setNestedValue(stream,command[4],f,s,command[8],command[10]);
       connection.write(serializeRESP(command[6]));
        }
-       else{connection.write("-error ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
+       else{connection.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");}
       }
       else{
         setNestedValue(stream,command[4],f,s,command[8],command[10]);
@@ -338,7 +338,7 @@ const s = parseInt(parts[1], 10);
       }
      }
      else{
-      connection.write("-error ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");
+      connection.write("-ERR The ID specified in XADD is equal or smaller than the target stream top item\r\n");
      }
      
      
