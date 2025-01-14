@@ -316,7 +316,9 @@ const s = parseInt(parts[1], 10);
  let mp = stream.get(command[4]);
  if(!stream.has(command[4])){
   if(f<=0 && s<=0){connection.write(serializeRESPONSE("ERR The ID specified in XADD must be greater than 0-0"));}
- }else{
+  else{setNestedValue(stream,command[4],f,s,command[8],command[10]);
+  connection.write(serializeRESP(command[6]));}
+}else{
      
      const greatestValue = Math.max(...mp.keys());
      if(greatestValue<=f){
