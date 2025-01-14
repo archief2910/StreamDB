@@ -401,7 +401,7 @@ const s = parseInt(parts[1], 10);
       let res1=[];
       res.forEach(entry => {
         console.log(entry);
-        let parts = entry.key.split('-');
+        let parts = entry[0].split('-');
         let f = parseInt(parts[0], 10);
         let s = parseInt(parts[1], 10);
         parts=firstrange.split('-');
