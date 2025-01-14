@@ -385,6 +385,7 @@ const s = parseInt(parts[1], 10);
          lastrange=`${mi1}-${mi2}`;
       
       let res=getEntriesInRange(stream,command[4],firstrange,lastrange);
+      console.log(res);
       if(command[6]!="-"){
         firstrange=command[6];
         if (!firstrange.includes("-")) {
