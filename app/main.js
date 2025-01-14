@@ -291,11 +291,11 @@ if(parts[1]=="*"){
   
   if(!stream.has(command[4])){
     if(f==0){setNestedValue(stream,command[4],f,1,command[8],command[10]);
-      connection.write(serializeRESP(command[6]));}
+      connection.write(serializeRESP(`${f}-1`));}
       else{
         
         setNestedValue(stream,command[4],f,0,command[8],command[10]);
-        connection.write(serializeRESP(command[6]));}
+        connection.write(serializeRESP(`${f}-0`));}
   }else{
   let mp = stream.get(command[4]);
 
@@ -306,15 +306,15 @@ if(parts[1]=="*"){
       let first=mp.get(f);
        const greatestValue1 = Math.max(...first.keys());
        setNestedValue(stream,command[4],f,1+greatestValue1,command[8],command[10]);
-        connection.write(serializeRESP(command[6]));
+        connection.write(serializeRESP(`${f}-${1+greatestValue1}`));
     }
     else{
       if(f==0){setNestedValue(stream,command[4],f,1,command[8],command[10]);
-        connection.write(serializeRESP(command[6]));}
+        connection.write(serializeRESP(`${f}-1`));}
         else{
           
           setNestedValue(stream,command[4],f,0,command[8],command[10]);
-          connection.write(serializeRESP(command[6]));}
+          connection.write(serializeRESP(`${f}-0`));}
       
     }
   }
