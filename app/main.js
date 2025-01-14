@@ -216,9 +216,9 @@ const server = net.createServer((connection) => {
         // Send the bulk string response
         connection.write(`$${info.length}\r\n${info}\r\n`);
       }
-    } else if (command[2].toUpperCase() === "REPLCONF" && command[4].toUpperCase() === "listening-port" && replicaidx ===-1) {
+    } else if (command[2].toUpperCase() === "REPLCONF" && command[4].toLowerCase() === "listening-port" && replicaidx ===-1) {
       connection.write("+OK\r\n");
-    } else if (command[2].toUpperCase() === "REPLCONF" && command[4].toUpperCase() === "capa"  && replicaidx ===-1) {
+    } else if (command[2].toUpperCase() === "REPLCONF" && command[4].toLowerCase() === "capa"  && replicaidx ===-1) {
       connection.write("+OK\r\n");
     } else if(command[2].toUpperCase() === "REPLCONF" && command[4].toUpperCase() === "ACK"){
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
@@ -228,7 +228,7 @@ const server = net.createServer((connection) => {
       offset = Math.min(availableReplicas.get(clientAddress),offset);
       console.log(`${offset} &&& ${availableReplicas[clientAddress]}`)
     }
-     else if (command[2].toUpperCase() === "PSYNC" && command[4].toUpperCase() === "?" && command[6].toUpperCase() === "-1"   && replicaidx ===-1) {
+     else if (command[2].toUpperCase() === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
       if (!replicaConnections.has(clientAddress)) {
           replicaConnections.set(clientAddress, connection);
