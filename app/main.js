@@ -146,12 +146,12 @@ const server = net.createServer((connection) => {
   connection.on("data", (data) => {
     console.log("Received:", data);
     const command = Buffer.from(data).toString().split("\r\n");
-    if (command[2] === "PING") {
+    if (command[2].toUpperCase() === "PING") {
       connection.write(serializeRESP("PONG"));
-    } else if (command[2] === "ECHO") {
+    } else if (command[2].toUpperCase()=== "ECHO") {
       const str = command[4];
       connection.write(serializeRESP(str));
-    } else if (command[2] === "SET") {
+    } else if (command[2].toUpperCase() === "SET") {
       offset+= serializeRESP([command[2],command[4],command[6]]).length;
       broadcastToReplicas(replicaConnections,data);
       map1.set(command[4], command[6]);
@@ -171,7 +171,7 @@ const server = net.createServer((connection) => {
       }
 
       connection.write(serializeRESP(true));
-    } else if (command[2] === "GET") {
+    } else if (command[2].toUpperCase() === "GET") {
       broadcastToReplicas(replicaConnections,data);
       console.log(`balle`);
       let currentTimestamp = Date.now();
@@ -186,7 +186,7 @@ const server = net.createServer((connection) => {
       } else {
         connection.write(serializeRESP(null));
       }
-    } else if (command[2] === "CONFIG" && command[4] === "GET") {
+    } else if (command[2].toUpperCase() === "CONFIG" && command[4].toUpperCase() === "GET") {
       if (addr.has(command[6])) {
         connection.write(
           serializeRESP([command[6], addr.get(command[6])])
@@ -194,7 +194,7 @@ const server = net.createServer((connection) => {
       } else {
         connection.write(serializeRESP(null));
       }
-    } else if (command[2] === "KEYS") {
+    } else if (command[2].toUpperCase() === "KEYS") {
       broadcastToReplicas(replicaConnections,data);
      // Get all keys from map1
   const keys = Array.from(map1.keys());
@@ -202,7 +202,7 @@ const server = net.createServer((connection) => {
   const respKeys = `*${keys.length}\r\n` + keys.map(key => `$${key.length}\r\n${key}\r\n`).join('');
   // Send the serialized response
   connection.write(respKeys);
-    }else if (command[2] === "INFO") {
+    }else if (command[2].toUpperCase() === "INFO") {
       if (replicaidx !== -1) {
         connection.write(serializeRESP("role:slave"));
       } else {
@@ -216,11 +216,11 @@ const server = net.createServer((connection) => {
         // Send the bulk string response
         connection.write(`$${info.length}\r\n${info}\r\n`);
       }
-    } else if (command[2] === "REPLCONF" && command[4] === "listening-port" && replicaidx ===-1) {
+    } else if (command[2].toUpperCase() === "REPLCONF" && command[4].toUpperCase() === "listening-port" && replicaidx ===-1) {
       connection.write("+OK\r\n");
-    } else if (command[2] === "REPLCONF" && command[4] === "capa"  && replicaidx ===-1) {
+    } else if (command[2].toUpperCase() === "REPLCONF" && command[4].toUpperCase() === "capa"  && replicaidx ===-1) {
       connection.write("+OK\r\n");
-    } else if(command[2] === "REPLCONF" && command[4] === "ACK"){
+    } else if(command[2].toUpperCase() === "REPLCONF" && command[4].toUpperCase() === "ACK"){
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
       
       availableReplicas.set(clientAddress,parseInt(command[6]));
@@ -228,7 +228,7 @@ const server = net.createServer((connection) => {
       offset = Math.min(availableReplicas.get(clientAddress),offset);
       console.log(`${offset} &&& ${availableReplicas[clientAddress]}`)
     }
-     else if (command[2] === "PSYNC" && command[4] === "?" && command[6] === "-1"   && replicaidx ===-1) {
+     else if (command[2].toUpperCase() === "PSYNC" && command[4].toUpperCase() === "?" && command[6].toUpperCase() === "-1"   && replicaidx ===-1) {
       const clientAddress = `${connection.remoteAddress}:${connection.remotePort}`;
       if (!replicaConnections.has(clientAddress)) {
           replicaConnections.set(clientAddress, connection);
@@ -240,7 +240,7 @@ const server = net.createServer((connection) => {
       const rdbHead = Buffer.from(`$${rdbBuffer.length}\r\n`)
       connection.write("+FULLRESYNC 8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb 0\r\n");
       connection.write(Buffer.concat([rdbHead, rdbBuffer]));
-    }  else if(command[2]==="WAIT"){
+    }  else if(command[2].toUpperCase()==="WAIT"){
       if(offset==0){connection.write(`:${replicaConnections.size}\r\n`);}
       else{ 
         broadcastToReplicas(replicaConnections,serializeRESP(["REPLCONF","GETACK","*"]));
@@ -256,11 +256,11 @@ console.log(`${successfulReplicas}`)
       connection.write(serializeRESP(successfulReplicas));
 });
     }
-    }else if (command[2]==="TYPE"){
+    }else if (command[2].toUpperCase()==="TYPE"){
       if(stream.has(command[4])){connection.write(serializeRESP(`stream`));}
       else if(map1.has(command[4])){connection.write(serializeRESP(`${typeof map1.get(command[4])}`));}
       else{connection.write(serializeRESP("none"));}
-    }else if(command[2]==="XADD"){
+    }else if(command[2].toUpperCase()==="XADD"){
       let i=8;
       let k1=[];
       while(i<=command.length){
@@ -367,7 +367,7 @@ const s = parseInt(parts[1], 10);
     }
     
     }
-    }else if(command[2]=="XRANGE"){
+    }else if(command[2].toUpperCase()=="XRANGE"){
       let firstrange="";
       let lastrange="";
       
