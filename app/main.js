@@ -401,7 +401,7 @@ const s = parseInt(parts[1], 10);
       }
       // Perform binary search
 let startIdx = lowerBound(res, firstrange);
-let endIdx = upperBound(res, lastrange);
+let endIdx = UpperBound(res, lastrange);
 
 // Filter entries within the range
 let res1 = res.slice(startIdx, endIdx);
