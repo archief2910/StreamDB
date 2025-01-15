@@ -401,6 +401,7 @@ const s = parseInt(parts[1], 10);
         else{  res2.push(commandturn[10 + (2 * i)]);
           res2.push(res3);
           res1.push(res2);}
+          console.log(res1);
       }
     
       connection.write(serializeRESP(res1));
