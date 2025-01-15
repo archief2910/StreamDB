@@ -395,10 +395,10 @@ const s = parseInt(parts[1], 10);
         let startIdx = UpperBound(res, commandturn[10 + (2 * i) + (sizer / 2)]);
         let endIdx = lowerBound(res, lastrange);
         let res3 = res.slice(startIdx, endIdx + 1);
-    
-        res2.push(commandturn[10 + (2 * i)]);
-        res2.push(res3);
-        res1.push(res2);
+        if(lastrange==commandturn[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
+        else{  res2.push(commandturn[10 + (2 * i)]);
+          res2.push(res3);
+          res1.push(res2);}
       }
     
       connection.write(serializeRESP(res1));
@@ -513,10 +513,11 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
           let startidx = UpperBound(res, command[6+(2*i)+(sizer/2)]);
           let endIdx = lowerBound(res, lastrange);
           let res3 = res.slice(startidx, endIdx+1);
-          if(lastrange==command[6 + (2 * i) + (sizer / 2)]){res3=0;}
-          res2.push(command[6+(2*i)]);
-          res2.push(res3);
-          res1.push(res2);
+          if(lastrange==command[6 + (2 * i) + (sizer / 2)]){res1.push(null);}
+  else{  res2.push(command[6 + (2 * i)]);
+    res2.push(res3);
+    res1.push(res2);}
+          
         }
         connection.write(serializeRESP(res1));
       }
