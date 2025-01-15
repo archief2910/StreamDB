@@ -141,6 +141,7 @@ if (replicaidx !== -1) {
   performHandshake(); // Trigger handshake
 }
 let commandturn = "";
+let client=null;
 // ye hai master server
 const server = net.createServer((connection) => {
   console.log("Client connected");
@@ -404,8 +405,9 @@ const s = parseInt(parts[1], 10);
           console.log(res1);
       }
       console.log(res1);
-      connection.write(serializeRESP(res1));
+      client.write(serializeRESP(res1));
       commandturn="";
+      client=null;
     }
     }else if(command[2].toUpperCase()=="XRANGE"){
       let firstrange="";
@@ -457,6 +459,7 @@ connection.write(serializeRESP(res1));
        sizer-=4;
        if(command[6]=="0"){
            commandturn =command;
+           client=connection;
        }
        else{
 setTimeout(() => {
