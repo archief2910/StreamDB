@@ -396,6 +396,7 @@ const s = parseInt(parts[1], 10);
         let startIdx = UpperBound(res, commandturn[10 + (2 * i) + (sizer / 2)]);
         let endIdx = lowerBound(res, lastrange);
         let res3 = res.slice(startIdx, endIdx + 1);
+        console.log(res3);
         if(lastrange==commandturn[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
         else{  res2.push(commandturn[10 + (2 * i)]);
           res2.push(res3);
