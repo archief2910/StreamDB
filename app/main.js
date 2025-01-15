@@ -380,7 +380,7 @@ const s = parseInt(parts[1], 10);
       
         let first1=stream.get(command[4]);
         const mi1 = Math.max(...first1.keys());
-         let second1=first.get(mi1);
+         let second1=first1.get(mi1);
          const mi2 = Math.max(...second1.keys());
          lastrange=`${mi1}-${mi2}`;
       
@@ -422,7 +422,7 @@ connection.write(serializeRESP(res1));
           let lastrange="";
           let first1=stream.get(command[6+(2*i)]);
         const mi1 = Math.max(...first1.keys());
-         let second1=first.get(mi1);
+         let second1=first1.get(mi1);
          const mi2 = Math.max(...second1.keys());
          lastrange=`${mi1}-${mi2}`;
           let res=getEntriesInRange(stream,command[6+(2*i)],command[6+(2*i)+(sizer/2)] ,lastrange);
