@@ -4,6 +4,7 @@ const path = require("path");
 const {getKeysValues,h} = require("./parseRDB.js");
 const {broadcastToReplicas,broadcastToReplicasWithTimeout,parseCommandChunks,serializeRESP} = require("./broadcasting.js");
 const {setNestedValue,getEntriesInRange}=require("./streams.js");
+const {lowerBound, upperBound} = require("./search.js");
 const portIdx = process.argv.indexOf("--port");
  const replicaidx = process.argv.indexOf("--replicaof");
  const PORT = portIdx == -1 ? 6379 : process.argv[portIdx + 1]
@@ -420,14 +421,23 @@ connection.write(serializeRESP(res1));
         for(let i=0; i<sizer/4; i++){
           let res2=[];
           let lastrange="";
+          let firstrange="";
           let first1=stream.get(command[6+(2*i)]);
         const mi1 = Math.max(...first1.keys());
          let second1=first1.get(mi1);
          const mi2 = Math.max(...second1.keys());
          lastrange=`${mi1}-${mi2}`;
-          let res=getEntriesInRange(stream,command[6+(2*i)],command[6+(2*i)+(sizer/2)] ,lastrange);
+         let first=stream.get(command[6+(2*i)]);
+         const min1 = Math.min(...first.keys());
+          let second=first.get(min1);
+          const min2 = Math.min(...second.keys());
+          firstrange=`${min1}-${min2}`;
+          let res=getEntriesInRange(stream,command[6+(2*i)],firstrange ,lastrange);
+          let startidx=lowerBound(res, command[6+(2*i)+(sizer/2)]);
+          let endIdx = lowerBound(res, lastrange);
+          let res3 = res.slice(startidx, endIdx);
           res2.push(command[6+(2*i)]);
-          res2.push(res);
+          res2.push(res3);
           res1.push(res2);
         }
         connection.write(serializeRESP(res1));
