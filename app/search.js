@@ -34,7 +34,20 @@ function upperBound(res, target) {
 
   return result;
 }
-
+function UpperBound(res, target) {
+  let [targetKey2, targetKey3] = target.split('-').map(Number);
+  let low = 0, high = res.length;
+  while (low < high) {
+    let mid = Math.floor((low + high) / 2);
+    let [key2, key3] = res[mid][0].split('-').map(Number);
+    if (key2 > targetKey2 || (key2 === targetKey2 && key3 > targetKey3)) {
+      high = mid;
+    } else {
+      low = mid + 1;
+    }
+  }
+  return low;
+}
 module.exports = {
-  lowerBound, upperBound,
+  lowerBound, upperBound,UpperBound
 };
