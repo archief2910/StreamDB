@@ -419,7 +419,7 @@ connection.write(serializeRESP(res1));
       }
       else{
         let res1=[];
-        for(let i=0; i<sizer/2; i++){
+        for(let i=0; i<sizer/4; i++){
           let res2=[];
           let lastrange="";
           let firstrange="";
