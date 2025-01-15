@@ -398,39 +398,40 @@ const s = parseInt(parts[1], 10);
           lastrange+="-0";
         } 
       }
-      let res1=[];
-      res.forEach(entry => {
-        console.log(entry);
-        let parts = entry[0].split('-');
-        let f = parseInt(parts[0], 10);
-        let s = parseInt(parts[1], 10);
-        parts=firstrange.split('-');
-        let f1 = parseInt(parts[0], 10);
-        let s1 = parseInt(parts[1], 10);
-        parts=lastrange.split('-');
-        let f2 = parseInt(parts[0], 10);
-        let s2 = parseInt(parts[1], 10);
-    if(f2>f1){
-      if(f>f1 && f<f2){
-        res1.push(entry);
-      }
-      else if(f==f1){
-        if(s>=s1){res1.push(entry);}
-      }
-      else if(f==f2){
-        if(s<=s2){res1.push(entry);}
-      }
-    }
-     else if(f1==f2){
-      if(f==f1){
-        if(s>=s1 && s<=s2){res1.push(entry);}
-      }
-     }
-     
-      });
-      connection.write(serializeRESP(res1));
+      // Perform binary search
+let startIdx = lowerBound(res, firstrange);
+let endIdx = upperBound(res, lastrange);
+
+// Filter entries within the range
+let res1 = res.slice(startIdx, endIdx);
+
+// Send the result
+connection.write(serializeRESP(res1));
 
 
+    }else if(command[2].toUpperCase()=="XREAD"){
+    let sizer=command.size();
+    sizer-=5;
+      if(command[4].toLowerCase()=="block"){
+
+      }
+      else{
+        let res1=[];
+        for(let i=0; i<sizer/4; i++){
+          let res2=[];
+          let lastrange="";
+          let first1=stream.get(command[6+(2*i)]);
+        const mi1 = Math.max(...first1.keys());
+         let second1=first.get(mi1);
+         const mi2 = Math.max(...second1.keys());
+         lastrange=`${mi1}-${mi2}`;
+          let res=getEntriesInRange(stream,command[6+(2*i)],command[6+(2*i)+(sizer/2)] ,lastrange);
+          res2.push(command[6+(2*i)]);
+          res2.push(res);
+          res1.push(res2);
+        }
+        connection.write(serializeRESP(res1));
+      }
     }
     else {
       connection.write(serializeRESP("ERR unknown command"));
