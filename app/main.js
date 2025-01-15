@@ -413,7 +413,7 @@ connection.write(serializeRESP(res1));
     }else if(command[2].toUpperCase()=="XREAD"){
     let sizer=command.length;
     sizer-=5;
-    console.log(command.length);
+    console.log(command[0]);
       if(command[4].toLowerCase()=="block"){
 
       }
