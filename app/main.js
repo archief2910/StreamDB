@@ -433,6 +433,7 @@ connection.write(serializeRESP(res1));
           const min2 = Math.min(...second.keys());
           firstrange=`${min1}-${min2}`;
           let res=getEntriesInRange(stream,command[6+(2*i)],firstrange ,lastrange);
+          console.log(command[6+(2*i)+(sizer/2)]);
           let startidx=lowerBound(res, command[6+(2*i)+(sizer/2)]);
           let endIdx = lowerBound(res, lastrange);
           let res3 = res.slice(startidx, endIdx);
