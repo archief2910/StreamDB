@@ -412,14 +412,14 @@ connection.write(serializeRESP(res1));
 
     }else if(command[2].toUpperCase()=="XREAD"){
     let sizer=command.length;
-    sizer-=5;
-    console.log(command[0]);
+    sizer-=6;
+   
       if(command[4].toLowerCase()=="block"){
 
       }
       else{
         let res1=[];
-        for(let i=0; i<sizer/4; i++){
+        for(let i=0; i<sizer/2; i++){
           let res2=[];
           let lastrange="";
           let firstrange="";
