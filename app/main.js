@@ -403,7 +403,7 @@ const s = parseInt(parts[1], 10);
           res1.push(res2);}
           console.log(res1);
       }
-    
+      console.log(res1);
       connection.write(serializeRESP(res1));
       commandturn="";
     }
