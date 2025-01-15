@@ -140,7 +140,7 @@ if (replicaidx !== -1) {
 
   performHandshake(); // Trigger handshake
 }
-
+let commandturn = "";
 // ye hai master server
 const server = net.createServer((connection) => {
   console.log("Client connected");
@@ -368,6 +368,42 @@ const s = parseInt(parts[1], 10);
     }
     
     }
+    if(commandturn !==""){
+      let sizer=commandturn.length;
+    sizer-=10;
+      let res1 = [];
+      for (let i = 0; i < sizer / 4; i++) {
+        let res2 = [];
+        let lastrange = "";
+        let firstrange = "";
+    
+        let first1 = stream.get(commandturn[10 + (2 * i)]);
+        const mi1 = Math.max(...first1.keys());
+        let second1 = first1.get(mi1);
+        const mi2 = Math.max(...second1.keys());
+        lastrange = `${mi1}-${mi2}`;
+    
+        let first = stream.get(commandturn[10 + (2 * i)]);
+        const min1 = Math.min(...first.keys());
+        let second = first.get(min1);
+        const min2 = Math.min(...second.keys());
+        firstrange = `${min1}-${min2}`;
+    
+        let res = getEntriesInRange(stream, commandturn[10 + (2 * i)], firstrange, lastrange);
+        console.log(commandturn[10 + (2 * i) + (sizer / 2)]);
+        
+        let startIdx = UpperBound(res, commandturn[10 + (2 * i) + (sizer / 2)]);
+        let endIdx = lowerBound(res, lastrange);
+        let res3 = res.slice(startIdx, endIdx + 1);
+    
+        res2.push(commandturn[10 + (2 * i)]);
+        res2.push(res3);
+        res1.push(res2);
+      }
+    
+      connection.write(serializeRESP(res1));
+      commandturn="";
+    }
     }else if(command[2].toUpperCase()=="XRANGE"){
       let firstrange="";
       let lastrange="";
@@ -415,7 +451,46 @@ connection.write(serializeRESP(res1));
     sizer-=6;
    
       if(command[4].toLowerCase()=="block"){
+       sizer-=4;
+       if(command[6]=="0"){
+           commandturn =command;
+       }
+       else{
+setTimeout(() => {
+  let res1 = [];
+  for (let i = 0; i < sizer / 4; i++) {
+    let res2 = [];
+    let lastrange = "";
+    let firstrange = "";
 
+    let first1 = stream.get(command[10 + (2 * i)]);
+    const mi1 = Math.max(...first1.keys());
+    let second1 = first1.get(mi1);
+    const mi2 = Math.max(...second1.keys());
+    lastrange = `${mi1}-${mi2}`;
+
+    let first = stream.get(command[10 + (2 * i)]);
+    const min1 = Math.min(...first.keys());
+    let second = first.get(min1);
+    const min2 = Math.min(...second.keys());
+    firstrange = `${min1}-${min2}`;
+
+    let res = getEntriesInRange(stream, command[10 + (2 * i)], firstrange, lastrange);
+    console.log(command[10 + (2 * i) + (sizer / 2)]);
+    
+    let startIdx = UpperBound(res, command[10 + (2 * i) + (sizer / 2)]);
+    let endIdx = lowerBound(res, lastrange);
+    let res3 = res.slice(startIdx, endIdx + 1);
+
+    res2.push(command[10 + (2 * i)]);
+    res2.push(res3);
+    res1.push(res2);
+  }
+
+  connection.write(serializeRESP(res1));
+}, parseInt(command[6],10)); // Replace `timeoutAmount` with the desired timeout in milliseconds
+
+       }
       }
       else{
         let res1=[];
