@@ -481,10 +481,10 @@ setTimeout(() => {
     let startIdx = UpperBound(res, command[10 + (2 * i) + (sizer / 2)]);
     let endIdx = lowerBound(res, lastrange);
     let res3 = res.slice(startIdx, endIdx + 1);
-if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res3=0;}
-    res2.push(command[10 + (2 * i)]);
+if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push("NULL");}
+  else{  res2.push(command[10 + (2 * i)]);
     res2.push(res3);
-    res1.push(res2);
+    res1.push(res2);}
   }
 
   connection.write(serializeRESP(res1));
