@@ -370,6 +370,7 @@ const s = parseInt(parts[1], 10);
     }
     if(commandturn !==""){
       let sizer=commandturn.length;
+      console.log("kaam lagbhag hogaya");
     sizer-=10;
       let res1 = [];
       for (let i = 0; i < sizer / 4; i++) {
