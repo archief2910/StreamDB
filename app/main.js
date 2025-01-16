@@ -426,7 +426,7 @@ const s = parseInt(parts[1], 10);
         let endIdx = lowerBound(res, lastrange);
         let res3 = res.slice(startIdx, endIdx + 1);
         if(commandturn[10 + (2 * i) + (sizer / 2)]=="$"){
-          let res4 =  res.filter(el => !ans[i].includes(el));
+          let res4 =  ans[i].filter(el => !res.includes(el));
           console.log(ans[i]);
           console.log(res);
           if(res4.length===0){res1.push(null);}
