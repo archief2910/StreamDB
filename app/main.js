@@ -285,13 +285,10 @@ console.log(`${successfulReplicas}`)
           let res = getEntriesInRange(stream, commandturn[10 + (2 * i)], firstrange, lastrange);
           console.log(commandturn[10 + (2 * i) + (sizer / 2)] );
           console.log("oyehoye");
-          let startIdx = UpperBound(res, commandturn[10 + (2 * i) + (sizer / 2)]);
-          let endIdx = lowerBound(res, lastrange);
-          let res3 = res.slice(startIdx, endIdx + 1);
-      if(lastrange==commandturn[10 + (2 * i) + (sizer / 2)]){ans.push(null);}
-        else{  
-          ans.push(res3);
-         }
+          
+       
+          ans.push(res);
+         
         }
       }
       let i=8;
@@ -429,7 +426,7 @@ const s = parseInt(parts[1], 10);
         let endIdx = lowerBound(res, lastrange);
         let res3 = res.slice(startIdx, endIdx + 1);
         if(command[10 + (2 * i) + (sizer / 2)]=="$"){
-          let res4 =  res3.filter(el => !ans[i].includes(el));
+          let res4 =  res.filter(el => !ans[i].includes(el));
           if(res4.length>0){res1.push(null);}
           else{res2.push(command[10 + (2 * i)]);
             res2.push(res4);
