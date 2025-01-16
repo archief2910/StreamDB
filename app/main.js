@@ -283,8 +283,8 @@ console.log(`${successfulReplicas}`)
           firstrange = `${min1}-${min2}`;
       
           let res = getEntriesInRange(stream, commandturn[10 + (2 * i)], firstrange, lastrange);
-          console.log(commandturn[10 + (2 * i) + (sizer / 2)]);
-          
+          console.log(commandturn[10 + (2 * i) + (sizer / 2)] );
+          console.log("oyehoye");
           let startIdx = UpperBound(res, commandturn[10 + (2 * i) + (sizer / 2)]);
           let endIdx = lowerBound(res, lastrange);
           let res3 = res.slice(startIdx, endIdx + 1);
@@ -502,7 +502,6 @@ connection.write(serializeRESP(res1));
        else{
         let ans=[];
         {
-          
   for (let i = 0; i < sizer / 4; i++) {
     let res2 = [];
     let lastrange = "";
@@ -527,7 +526,7 @@ connection.write(serializeRESP(res1));
     let endIdx = lowerBound(res, lastrange);
     let res3 = res.slice(startIdx, endIdx + 1);
 if(lastrange==command[10 + (2 * i) + (sizer / 2)]){ans.push(null);}
-  else{  
+  else{
     ans.push(res3);
    }
   }
