@@ -157,7 +157,7 @@ const server = net.createServer((connection) => {
         connection.isMultiMode = false; // Exit MULTI mode
         connection.multiBuffer = []; // Clear the buffer
         connection.write("+OK\r\n");
-      }
+      }else if(command[2]=="EXEC"){}
       else{connection.multiBuffer.push(command);
         connection.write("+QUEUED\r\n");}
      
