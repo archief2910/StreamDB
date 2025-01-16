@@ -283,7 +283,7 @@ console.log(`${successfulReplicas}`)
           firstrange = `${min1}-${min2}`;
       
           let res = getEntriesInRange(stream, commandturn[10 + (2 * i)], firstrange, lastrange);
-          console.log(commandturn[10 + (2 * i) + (sizer / 2)] );
+          console.log(res );
           console.log("oyehoye");
           
        
