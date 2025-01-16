@@ -186,7 +186,9 @@ const server = net.createServer((connection) => {
         if(map3.get(command[4]) >= currentTimestamp){connection.write(serializeRESP(map1.get(command[4])));}
         else{connection.write(serializeRESP(null));}
        } 
-       else{connection.write(serializeRESP(map1.get(command[4])));}
+       else{if(parseInt(map1.get(command[4]),10)!== NaN){connection.write(serializeRESP(map1.get(command[4])));}
+       else{connection.write(`:${parseInt(map1.get(command[4],10))}\r\n`);}
+        }
       } else {
         connection.write(serializeRESP(null));
       }
