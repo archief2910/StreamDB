@@ -607,10 +607,11 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
     }else if(command[2]=="INCR"){
       if(map1.has(command[4])){
         console.log(parseInt(map1.get(command[4],10)));
-        if(parseInt(map1.get(command[4],10))==NaN){map1.set(command[4],`${parseInt(map1.get(command[4],10))+1}`);
+        if(isNaN(parseInt(map1.get(command[4],10)))){connection.write("-ERR value is not an integer or out of range\r\n");}
+        else{map1.set(command[4],`${parseInt(map1.get(command[4],10))+1}`);
           connection.write(`:${parseInt(map1.get(command[4],10))}\r\n`);
         }
-        else{connection.write("-ERR value is not an integer or out of range\r\n");}
+        
       }
       else{map1.set(command[4],"1");
         connection.write(":1\r\n");
