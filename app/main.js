@@ -664,7 +664,7 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
               setTimeout(accurateTimeout, interval);
             }
       
-          ans.push(serializeRESP(true));
+          ans.push("OK");
           } else if (command[2].toUpperCase() === "GET") {
             broadcastToReplicas(replicaConnections,data);
             console.log(`balle`);
@@ -674,25 +674,25 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
              if(map3.has(command[4])){
               console.log(`Key "${map3.get(command[4])}"`)
               if(map3.get(command[4]) >= currentTimestamp){ans.push(serializeRESP(map1.get(command[4])));}
-              else{ans.push(serializeRESP(null));}
+              else{ans.push(null);}
              } 
-             else{ans.push(serializeRESP(map1.get(command[4])));
+             else{ans.push(map1.get(command[4]));
              
               }
             } else {
-              ans.push(serializeRESP(null));
+              ans.push(null);
             }
           }else if(command[2]=="INCR"){
             if(map1.has(command[4])){
               console.log(parseInt(map1.get(command[4],10)));
-              if(isNaN(parseInt(map1.get(command[4],10)))){ans.push("-ERR value is not an integer or out of range\r\n");}
+              if(isNaN(parseInt(map1.get(command[4],10)))){ans.push("-ERR value is not an integer or out of range");}
               else{map1.set(command[4],`${parseInt(map1.get(command[4],10))+1}`);
-              ans.push(`:${parseInt(map1.get(command[4],10))}\r\n`);
+              ans.push(`:${parseInt(map1.get(command[4],10))}`);
               }
               
             }
             else{map1.set(command[4],"1");
-              ans.push(":1\r\n");
+              ans.push(":1");
             }
           }
         });
