@@ -700,7 +700,8 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
         connection.isMultiMode = false; // Exit MULTI mode
         connection.multiBuffer = []; // Clear the buffer
         connection.write(serializeRESP(ans)); // Conve
-      }else{connection.write("-ERR EXEC without MULTI\r\n");}
+      }else{console.log("EXEC without MULTI");
+        connection.write("-ERR EXEC without MULTI\r\n");}
       
     }
   });
