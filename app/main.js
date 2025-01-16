@@ -636,7 +636,7 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
       connection.write("-ERR DISCARD without MULTI\r\n");
     }
     else {
-      connection.write(serializeRESP("ERR unknown command"));
+      
     }
     if(command[2]=="EXEC"){
       if (connection.isMultiMode) {
