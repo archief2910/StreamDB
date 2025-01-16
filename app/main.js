@@ -670,14 +670,16 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
             console.log(`balle`);
             let currentTimestamp = Date.now();
             if (map1.has(command[4])){
+              
               console.log('Map3 (Key-ExpiryTime):', map3);
              if(map3.has(command[4])){
               console.log(`Key "${map3.get(command[4])}"`)
               if(map3.get(command[4]) >= currentTimestamp){ans.push(serializeRESP(map1.get(command[4])));}
               else{ans.push(null);}
-             } 
+             }
              else{console.log("gadbad yaha hain");
-              ans.push(map1.get(command[4]));
+             if(isNaN(map1.get(command[4]))){ans.push(map1.get(command[4]));} 
+             else{ans.push(`:${map1.get(command[4])}`);}
              
               }
             } else {
