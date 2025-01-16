@@ -425,17 +425,17 @@ const s = parseInt(parts[1], 10);
         let startIdx = UpperBound(res, commandturn[10 + (2 * i) + (sizer / 2)]);
         let endIdx = lowerBound(res, lastrange);
         let res3 = res.slice(startIdx, endIdx + 1);
-        if(command[10 + (2 * i) + (sizer / 2)]=="$"){
+        if(commandturn[10 + (2 * i) + (sizer / 2)]=="$"){
           let res4 =  res.filter(el => !ans[i].includes(el));
           if(res4.length===0){res1.push(null);}
-          else{res2.push(command[10 + (2 * i)]);
+          else{res2.push(commandturn[10 + (2 * i)]);
             res2.push(res4);
             res1.push(res2);}
         }
         else{
         
-    if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
-      else{  res2.push(command[10 + (2 * i)]);
+    if(lastrange==commandturn[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
+      else{  res2.push(commandturn[10 + (2 * i)]);
         res2.push(res3);
         res1.push(res2);}}
       }
