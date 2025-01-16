@@ -678,7 +678,7 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
               else{ans.push(null);}
              }
              else{console.log("gadbad yaha hain");
-             if(isNaN(map1.get(command[4]))){ans.push(map1.get(command[4]));} 
+             if(isNaN(parseInt(map1.get(command[4])))){ans.push(map1.get(command[4]));} 
              else{ans.push(`:${map1.get(command[4])}`);}
              
               }
