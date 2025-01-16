@@ -428,6 +428,7 @@ const s = parseInt(parts[1], 10);
         if(commandturn[10 + (2 * i) + (sizer / 2)]=="$"){
           let res4 =  res.filter(el => !ans[i].includes(el));
           console.log(ans[i]);
+          console.log(res);
           if(res4.length===0){res1.push(null);}
           else{res2.push(commandturn[10 + (2 * i)]);
             res2.push(res4);
