@@ -427,7 +427,7 @@ const s = parseInt(parts[1], 10);
         let res3 = res.slice(startIdx, endIdx + 1);
         if(command[10 + (2 * i) + (sizer / 2)]=="$"){
           let res4 =  res.filter(el => !ans[i].includes(el));
-          if(res4.length>0){res1.push(null);}
+          if(res4.length===0){res1.push(null);}
           else{res2.push(command[10 + (2 * i)]);
             res2.push(res4);
             res1.push(res2);}
