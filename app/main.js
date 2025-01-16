@@ -153,12 +153,13 @@ const server = net.createServer((connection) => {
     console.log("Received:", data);
     const command = Buffer.from(data).toString().split("\r\n");
     if(connection.isMultiMode){
+
       if(command[2].toUpperCase()=="DISCARD"){
         connection.isMultiMode = false; // Exit MULTI mode
         connection.multiBuffer = []; // Clear the buffer
         connection.write("+OK\r\n");
       }else if(command[2]=="EXEC"){}
-      else{connection.multiBuffer.push(command);
+      else{connection.multiBuffer.push(command);console.log("done");
         connection.write("+QUEUED\r\n");}
      
     }
