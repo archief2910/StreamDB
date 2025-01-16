@@ -187,7 +187,7 @@ const server = net.createServer((connection) => {
         else{connection.write(serializeRESP(null));}
        } 
        else{if(parseInt(map1.get(command[4]),10)!== NaN){connection.write(serializeRESP(map1.get(command[4])));}
-       else{connection.write(`:${parseInt(map1.get(command[4],10))}\r\n`);}
+       else{connection.write(serializeRESP(`${parseInt(map1.get(command[4],10))}`));}
         }
       } else {
         connection.write(serializeRESP(null));
