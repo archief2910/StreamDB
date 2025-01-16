@@ -665,7 +665,7 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
               setTimeout(accurateTimeout, interval);
             }
       
-          ans.push("OK");
+          ans.push("+OK");
           } else if (command[2].toUpperCase() === "GET") {
             broadcastToReplicas(replicaConnections,data);
             console.log(`balle`);
