@@ -691,12 +691,12 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
               console.log(parseInt(map1.get(command[4],10)));
               if(isNaN(parseInt(map1.get(command[4],10)))){ans.push("-ERR value is not an integer or out of range");}
               else{map1.set(command[4],`${parseInt(map1.get(command[4],10))+1}`);
-              ans.push(`${parseInt(map1.get(command[4],10))}`);
+              ans.push(`:${parseInt(map1.get(command[4],10))}`);
               }
               
             }
             else{map1.set(command[4],"1");
-              ans.push("1");
+              ans.push(":1");
             }
           }
         });
