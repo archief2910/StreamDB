@@ -677,9 +677,10 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
               if(map3.get(command[4]) >= currentTimestamp){ans.push(serializeRESP(map1.get(command[4])));}
               else{ans.push(null);}
              }
-             else{console.log("gadbad yaha hain");
+             else{
              if(isNaN(parseInt(map1.get(command[4])))){ans.push(map1.get(command[4]));} 
-             else{ans.push(`:${map1.get(command[4])}`);}
+             else{console.log("gadbad yaha hain");
+              ans.push(`:${map1.get(command[4])}`);}
              
               }
             } else {
