@@ -645,6 +645,7 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
         
         // Process each message in the multiBuffer
         connection.multiBuffer.forEach((command) => {
+          console.log(command);
            if (command[2].toUpperCase() === "SET") {
             offset+= serializeRESP([command[2],command[4],command[6]]).length;
             broadcastToReplicas(replicaConnections,data);
