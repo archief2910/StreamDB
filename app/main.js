@@ -14,7 +14,9 @@ const portIdx = process.argv.indexOf("--port");
  const availableReplicas = new Map();
  const stream =new Map();
 let offset=0;
-
+function deepEqual(obj1, obj2) {
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
+}
 let rdb = null; // Initialize RDB to null
 let map1=new Map();
 let map3 = new Map();
@@ -426,7 +428,7 @@ const s = parseInt(parts[1], 10);
         let endIdx = lowerBound(res, lastrange);
         let res3 = res.slice(startIdx, endIdx + 1);
         if(commandturn[10 + (2 * i) + (sizer / 2)]=="$"){
-          let res4 =  res.filter(el => !ans[i].includes(el));
+          let res4 = res.filter(item1 => !ans[i].some(item2 => deepEqual(item1, item2)));
           console.log(ans[i]);
           console.log(res);
           console.log(res4);
