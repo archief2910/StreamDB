@@ -524,13 +524,9 @@ connection.write(serializeRESP(res1));
     let res = getEntriesInRange(stream, command[10 + (2 * i)], firstrange, lastrange);
     console.log(command[10 + (2 * i) + (sizer / 2)]);
     
-    let startIdx = UpperBound(res, command[10 + (2 * i) + (sizer / 2)]);
-    let endIdx = lowerBound(res, lastrange);
-    let res3 = res.slice(startIdx, endIdx + 1);
-if(lastrange==command[10 + (2 * i) + (sizer / 2)]){ans.push(null);}
-  else{
-    ans.push(res3);
-   }
+    
+    ans.push(res);
+   
   }
         }
 setTimeout(() => {
@@ -558,8 +554,8 @@ setTimeout(() => {
     let res3 = res.slice(startIdx, endIdx + 1);
     console.log(command[10 + (2 * i) + (sizer / 2)]);
     if(command[10 + (2 * i) + (sizer / 2)]=="$"){
-      let res4 =  res3.filter(el => !ans[i].includes(el));
-      if(res4.length>0){res1.push(null);}
+      let res4 = res.filter(item1 => !ans[i].some(item2 => deepEqual(item1, item2)));
+      if(res4.length===0){res1.push(null);}
       else{res2.push(command[10 + (2 * i)]);
         res2.push(res4);
         res1.push(res2);}
@@ -605,6 +601,16 @@ if(lastrange==command[10 + (2 * i) + (sizer / 2)]){res1.push(null);}
           
         }
         connection.write(serializeRESP(res1));
+      }
+    }else if(command[2]=="INCR"){
+      if(map1.has(command[4])){
+        if(parseInt(map1.get(command[4],10))!==NaN){map1.set(command[4],parseInt(map1.get(command[4],10))+1);
+          connection.write(`:${parseInt(map1.get(command[4],10))}\r\n`);
+        }
+        else{connection.write("-ERR value is not an integer or out of range\r\n");}
+      }
+      else{map1.set(command[4],1);
+        connection.write(":1\r\n");
       }
     }
     else {
