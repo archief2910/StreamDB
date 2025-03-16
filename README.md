@@ -49,12 +49,12 @@ npm install
 
 ### **3️⃣ Start the StreamDB Server**
 ```bash
-npm start
+node main.js
 ```
 
 ### **4️⃣ Connect & Execute Commands**
 ```bash
-node client.js
+telnet <SERVER_IP> <PORT> <command that you want to send>
 ```
 
 ---
