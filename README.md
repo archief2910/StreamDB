@@ -59,7 +59,7 @@ node main.js
 ## 📡 Sending Commands to StreamDB via CLI
 
 
-### 1 **Using Telnet**
+### 1️⃣ **Using Telnet**
 ```bash
 telnet <SERVER_IP> <PORT>
 ```
@@ -72,7 +72,7 @@ Once connected, type and send commands manually.
 
 
 
-### 2 **Using Netcat (`nc`) **
+### 2️⃣ **Using Netcat (`nc`)**
 To connect and manually send commands:
 ```bash
 nc <SERVER_IP> <PORT>
