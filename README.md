@@ -2,7 +2,7 @@
 
 **StreamDB** is a high-performance, Redis-inspired database server built in **Node.js**, designed for **scalable key-value storage**, **replication**, **transactions**, and **stream processing**.
 
-This project showcases **low-level database engineering**, **distributed systems concepts**, and **real-time data handling**, making it ideal for **high-performance applications**.
+This project showcases **low-level database engineering** and  **distributed systems concepts**, making it ideal for **high-performance applications**.
 
 ---
 
@@ -59,18 +59,6 @@ node client.js
 
 ---
 
-## 🚀 Why StreamDB?
-
-This project demonstrates:
-✅ **Deep understanding of database internals**  
-✅ **Low-level key-value storage mechanics**  
-✅ **Replication & high-availability concepts**  
-✅ **Atomic transactions in distributed systems**  
-✅ **Real-time data streaming & concurrency handling**  
-
-If you’re a **recruiter** looking for expertise in **backend engineering, distributed systems, or database development**, this project highlights **practical implementation skills** in these domains.
-
----
 
 ## 🤝 Contributing
 
