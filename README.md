@@ -58,21 +58,8 @@ node main.js
 
 ## 📡 Sending Commands to StreamDB via CLI
 
-### 1️⃣ **Using Netcat (`nc`) for Direct Communication**
-Send a command to the server using `nc`:
-```bash
-echo "PING" | nc <SERVER_IP> <PORT>
-```
-Example:
-```bash
-echo "PING" | nc 192.168.1.100 6379
-```
-For UDP communication:
-```bash
-echo "PING" | nc -u <SERVER_IP> <PORT>
-```
 
-### 2️⃣ **Using Telnet (For Interactive TCP Connections)**
+### 1 **Using Telnet**
 ```bash
 telnet <SERVER_IP> <PORT>
 ```
@@ -82,31 +69,10 @@ telnet 192.168.1.100 6379
 ```
 Once connected, type and send commands manually.
 
-### 3️⃣ **Using Curl (For HTTP-Based Communication)**
-If the server supports HTTP API:
-```bash
-curl -X POST "http://<SERVER_IP>:<PORT>/command" -d "PING"
-```
-Example:
-```bash
-curl -X GET "http://192.168.1.100:8080/status"
-```
-For JSON data:
-```bash
-curl -X POST "http://192.168.1.100:8080/command" -H "Content-Type: application/json" -d '{"command":"PING"}'
-```
 
-### 4️⃣ **Using SSH (For Remote Execution on Server)**
-If the server allows **SSH access**:
-```bash
-ssh user@<SERVER_IP> "YOUR_COMMAND_HERE"
-```
-Example:
-```bash
-ssh admin@192.168.1.100 "ls -l /var/logs"
-```
 
-### 5️⃣ **Using Netcat (`nc`) in Interactive Mode**
+
+### 2 **Using Netcat (`nc`) **
 To connect and manually send commands:
 ```bash
 nc <SERVER_IP> <PORT>
