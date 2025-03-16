@@ -2,7 +2,7 @@
 
 **StreamDB** is a high-performance, Redis-inspired database server built in **Node.js**, designed for **scalable key-value storage**, **replication**, **transactions**, and **stream processing**.
 
-This project showcases **low-level database engineering** and  **distributed systems concepts**, making it ideal for **high-performance applications**.
+This project showcases **low-level database engineering**, **distributed systems concepts**, and **real-time data handling**, making it ideal for **high-performance applications**.
 
 ---
 
@@ -52,13 +52,68 @@ npm install
 node main.js
 ```
 
-### **4️⃣ Connect & Execute Commands**
-```bash
-telnet <SERVER_IP> <PORT> <command that you want to send>
-```
+
 
 ---
 
+## 📡 Sending Commands to StreamDB via CLI
+
+### 1️⃣ **Using Netcat (`nc`) for Direct Communication**
+Send a command to the server using `nc`:
+```bash
+echo "PING" | nc <SERVER_IP> <PORT>
+```
+Example:
+```bash
+echo "PING" | nc 192.168.1.100 6379
+```
+For UDP communication:
+```bash
+echo "PING" | nc -u <SERVER_IP> <PORT>
+```
+
+### 2️⃣ **Using Telnet (For Interactive TCP Connections)**
+```bash
+telnet <SERVER_IP> <PORT>
+```
+Example:
+```bash
+telnet 192.168.1.100 6379
+```
+Once connected, type and send commands manually.
+
+### 3️⃣ **Using Curl (For HTTP-Based Communication)**
+If the server supports HTTP API:
+```bash
+curl -X POST "http://<SERVER_IP>:<PORT>/command" -d "PING"
+```
+Example:
+```bash
+curl -X GET "http://192.168.1.100:8080/status"
+```
+For JSON data:
+```bash
+curl -X POST "http://192.168.1.100:8080/command" -H "Content-Type: application/json" -d '{"command":"PING"}'
+```
+
+### 4️⃣ **Using SSH (For Remote Execution on Server)**
+If the server allows **SSH access**:
+```bash
+ssh user@<SERVER_IP> "YOUR_COMMAND_HERE"
+```
+Example:
+```bash
+ssh admin@192.168.1.100 "ls -l /var/logs"
+```
+
+### 5️⃣ **Using Netcat (`nc`) in Interactive Mode**
+To connect and manually send commands:
+```bash
+nc <SERVER_IP> <PORT>
+```
+Then type commands interactively.
+
+---
 
 ## 🤝 Contributing
 
