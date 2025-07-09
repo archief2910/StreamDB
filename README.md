@@ -22,7 +22,7 @@ All **core commands** (`SET`, `GET`, `INCR`, `KEYS`, `PING`, `ECHO`, `XADD`, `XR
 ### Core Redis‑Like Commands
 
 - `SET`, `GET`, `INCR`, `KEYS`, `PING`, `ECHO`
-- Fast in‑memory key lookup and optimized data structures (48% faster than naive hash maps).
+- Fast in‑memory key lookup and optimized data structures .
 
 ### TTL & Expiration
 
