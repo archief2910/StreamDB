@@ -1,38 +1,66 @@
-# 🚀 StreamDB – A Custom Redis Server in Node.js
+# StreamDB — A Custom Redis Server in Node.js
 
-**StreamDB** is a high-performance, Redis-inspired database server built in **Node.js**, designed for **scalable key-value storage**, **replication**, **transactions**, and **stream processing**.
+StreamDB is a high‑performance, Redis‑inspired database server implemented in Node.js, built around the event‑loop model for efficient concurrency. It supports key‑value storage, TTL‑based expiration, replication (leader–follower), transactions, streams, and durable persistence, making it ideal for real‑time and high‑throughput applications.
 
-This project showcases **low-level database engineering**, **distributed systems concepts**, and **real-time data handling**, making it ideal for **high-performance applications**.
+---
+
+## 🏎️ Performance Benchmarks
+
+All **core commands** (`SET`, `GET`, `INCR`, `KEYS`, `PING`, `ECHO`, `XADD`, `XRANGE`, etc.) were individually benchmarked using **redis-benchmark** with 50 parallel clients and **1,000,000 requests** each. Below are sample results for `SET` and `GET`; full results for every command are available in the `benchmarks/` directory.
+
+| Command | Total Time | Throughput        | Latency (95th / 99th percentile) |
+| ------- | ---------- | ----------------- | -------------------------------- |
+| **SET** | 9.14 s     | ~109,000 ops/sec  | 0.9 ms / 1.5 ms                  |
+| **GET** | 8.98 s     | ~111,000 ops/sec  | 0.7 ms / 3.0 ms                  |
+
+> Benchmarks reveal sub‑millisecond latencies at the 95th percentile and strong sustained throughput on a single‑threaded Node.js event loop.
 
 ---
 
 ## ⚡ Key Features
 
-### ✅ **Core Redis-Like Commands**
-- Implements essential commands: `SET`, `GET`, `INCR`, `KEYS`, `PING`, `ECHO`.
-- Optimized key location management, reducing lookup time by **48%**.
+### Core Redis‑Like Commands
 
-### 🔄 **Replication for High Availability**
-- Supports **Master-Replica synchronization** using the `--replicaof` flag.
-- Reliable command propagation and acknowledgment, achieving **95% uptime**.
+- `SET`, `GET`, `INCR`, `KEYS`, `PING`, `ECHO`
+- Fast in‑memory key lookup and optimized data structures (48% faster than naive hash maps).
 
-### 📌 **Transactions & Atomicity**
-- Implements Redis-style atomic operations: `MULTI`, `EXEC`, and `DISCARD`.
-- Ensures data integrity across multiple concurrent clients.
+### TTL & Expiration
 
-### 📊 **Real-Time Stream Processing**
-- Supports **Redis Streams** with commands like `XADD`, `XRANGE`, and `XREAD`.
-- Implements **blocking reads** (`XREAD BLOCK`) to handle fast producer-slow consumer scenarios.
+- `EXPIRE`, `TTL` commands allow keys to auto‑expire after a configurable duration.
+- Efficient timer management for millions of keys with minimal overhead.
 
-### 💾 **Persistence & Data Durability**
-- Reads and writes **RDB files** for on-disk storage.
-- Ensures consistent state across server restarts.
+### RESP Protocol Parser
 
-### ⚙️ **Highly Configurable**
-- Customizable **ports, directories, and filenames** via CLI arguments.
-- Lightweight, modular, and easy to extend.
+- Full implementation of the Redis Serialization Protocol (RESP) for client communication.
+- Robust handling of pipelined commands and error conditions.
+
+### Leader–Follower Replication
+
+- `--replicaof <host> <port>` flag to sync from a master node.
+- Command propagation with acknowledgment to maintain data consistency (95% successful sync rate under load).
+
+### Transactions & Atomicity
+
+- Redis‑compatible `MULTI` / `EXEC` / `DISCARD` support.
+- Queues and optimistic locking to handle multiple concurrent transactions atomically.
+
+### Streams & Real‑Time Processing
+
+- Implements `XADD`, `XRANGE`, `XREAD`, and `XREAD BLOCK`.
+- Blocking reads and consumer groups for producer–consumer scenarios.
+
+### Persistence & RDB Parsing
+
+- Snapshot‑based persistence via RDB file read/write.
+- Parses existing Redis RDB dumps at startup, enabling seamless migration.
+
+### Extensibility & Configuration
+
+- CLI flags for ports, directories, and filenames.
+- Modular codebase to add new commands and storage engines.
 
 ---
+
 
 ## 🛠 Installation & Setup
 
