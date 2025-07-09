@@ -6,7 +6,7 @@ StreamDB is a high‑performance, Redis‑inspired database server implemented i
 
 ## 🏎️ Performance Benchmarks
 
-All **core commands** (`SET`, `GET`, `INCR`, `KEYS`, `PING`, `ECHO`, `XADD`, `XRANGE`, etc.) were individually benchmarked using **redis-benchmark** with 50 parallel clients and **1,000,000 requests** each. Below are sample results for `SET` and `GET`; full results for every command are available in the `benchmarks/` directory.
+All **core commands** (`SET`, `GET`, `INCR`, `KEYS`, `PING`, `ECHO`, `XADD`, `XRANGE`, etc.) were individually benchmarked using **redis-benchmark** with **1,000,000 requests** each. Below are sample results for `SET` and `GET`; 
 
 | Command | Total Time | Throughput        | Latency (95th / 99th percentile) |
 | ------- | ---------- | ----------------- | -------------------------------- |
