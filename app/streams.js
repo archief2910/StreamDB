@@ -49,7 +49,7 @@ function getEntriesInRange(mp, key1, rangeStart, rangeEnd) {
     }
   }
 
-  // Sort the results by key2 and key3
+
   result.sort((a, b) => {
     const [keyA2, keyA3] = a[0].split('-').map(Number);  // Access key2 and key3 from the string key
     const [keyB2, keyB3] = b[0].split('-').map(Number);  // Access key2 and key3 from the string key
